@@ -38,7 +38,7 @@ const CHIPS = [
 function Hero() {
   return (
     <section className="hero-glow relative overflow-hidden">
-      <Squares items={[{ className: 'left-[46%] top-16 h-5 w-5 bg-accent-blue' }, { className: 'left-[3%] bottom-10 h-4 w-4 bg-accent-purple' }]} />
+      <Squares items={[{ className: 'hidden lg:block left-[47%] top-10 h-5 w-5 bg-accent-blue' }, { className: 'left-[3%] bottom-10 h-4 w-4 bg-accent-purple' }]} />
       <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 pb-16 pt-12 sm:px-6 lg:grid-cols-[1fr_1.05fr] lg:pb-24 lg:pt-20">
         <div>
           <h1 className="display text-4xl leading-[1.12] text-ink sm:text-5xl lg:text-[2.6rem] xl:text-5xl">
