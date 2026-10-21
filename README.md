@@ -46,6 +46,16 @@ Then set `DATABASE_URL` and `DIRECT_URL` in `backend/.env` to `postgresql://pg:p
 
 Every error reply is `{ "message": "one plain sentence", "code": "…" }`. The data-quality report is saved in the database but never sent to the page.
 
+## Online (deployment)
+
+| Part | Service | Settings |
+|---|---|---|
+| API | Render (free, Frankfurt) | Blueprint `render.yaml`; variables `DATABASE_URL`, `DIRECT_URL`, `CORS_ORIGINS` |
+| Database | Supabase (same project as the AASHTO app) | Session pooler string ending with `?schema=superpave` |
+| Web page | Vercel | Root Directory `frontend` (`frontend/vercel.json` builds the engine first); variable `NEXT_PUBLIC_API_URL` = the Render address |
+
+Every push to `main` deploys again automatically.
+
 ## Exports (made in the browser)
 
 - **PDF report:**
@@ -72,7 +82,7 @@ Column names are recognised in many spellings, for example TMPMAX, Tmax, TX, "Ma
 
 Your own station files can be put in `parser/test/fixtures/private/`. This folder is never committed, and `meisso.test.ts` runs only when TT_Meisso.csv is there.
 
-## Calculation rules (engine version 1.2.0)
+## Calculation rules (engine version 1.3.0)
 
 - **Cleaning:**
   - Invalid calendar dates are dropped.
@@ -92,6 +102,7 @@ Your own station files can be put in `parser/test/fixtures/private/`. This folde
   - T_pav,low = −1.56 + 0.72·T_air,low − 0.004·Lat² + 6.26·log10(0 + 25) − z·√(4.4 + 0.52·σ²)
 - **Rounding:** the high grade is rounded up to 46…88. The low grade is rounded down to −10…−46.
 - **Traffic:** AASHTO M323 Table 1 bumping, set in `engine/src/config/gradeBumping.ts`. The low grade does not change. The result is capped at PG 88.
+- **Binder type:** crude oil, high-quality crude oil or modifier required, from the chart for crude oil blends (`engine/src/config/binderType.ts`), plus the rule-of-90 check.
 - **Specification table:**
   - DSR tests at the high grade temperature.
   - PAV DSR at (high + low)/2 + 4.
