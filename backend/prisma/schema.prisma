@@ -1,4 +1,4 @@
-// Database table for the Superpave PG Binder Selector.
+// Database tables for the Superpave PG Binder Selector.
 //
 // The tables live in their own PostgreSQL schema (add ?schema=superpave to the connection
 // strings), so this app can share the Supabase project of the pavement design app without
@@ -15,6 +15,18 @@ datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+}
+
+/// An engineer who can sign in. Passwords are stored only as bcrypt hashes.
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  passwordHash String     @map("password_hash")
+  name         String?
+  createdAt    DateTime   @default(now()) @map("created_at")
+  analyses     Analysis[]
+
+  @@map("users")
 }
 
 /// One saved analysis: the inputs, the yearly climate results and the PG grade.
@@ -36,9 +48,13 @@ model Analysis {
   climateGrade       String   @map("climate_grade")
   finalGrade         String   @map("final_grade")
   engineVersion      String   @map("engine_version")
+  /// The account that made it. Empty for analyses saved before accounts existed (they stay read-only).
+  ownerId            String?  @map("owner_id")
+  owner              User?    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 
   @@index([createdAt])
+  @@index([ownerId, updatedAt])
   @@map("analyses")
 }

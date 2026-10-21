@@ -1,13 +1,16 @@
 'use client';
 /**
  * The page: inputs → results. The engine runs in the browser so results show at once; the API re-reads the
- * file, saves the analysis and gives it a link (?a=<id>). Changing ESAL, speed, latitude or the "consider"
- * choice recalculates instantly from the yearly results already loaded, and the saved copy is updated.
+ * file, saves the analysis under the signed-in account and gives it a link (?a=<id>). Changing ESAL, speed,
+ * latitude or the "consider" choice recalculates instantly from the yearly results already loaded, and the
+ * owner's saved copy is updated. Anyone else opening the link sees it read-only (changes are not saved).
  */
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnalysisError, analyseClimate, computeGrade, validateDesignInputs, type DesignInputs, type GradeResult } from '@pg/engine';
 import { MAX_FILE_BYTES, readTemperatureFile, type StationInfo } from '@pg/parser';
 import { ApiError, createAnalysis, getAnalysis, updateAnalysis, wakeApi, type ClimateView } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { parseNumber } from '@/lib/format';
 import { downloadCanvas } from '@/lib/chart-canvas';
 import type { ReportInput } from '@/lib/report';
@@ -26,7 +29,11 @@ interface Loaded {
   fileName: string;
 }
 
-type SaveState = { kind: 'idle' } | { kind: 'saving' } | { kind: 'saved'; id: string } | { kind: 'failed'; message: string };
+type SaveState =
+  | { kind: 'idle' }
+  | { kind: 'saving' }
+  | { kind: 'saved'; id: string; ownerId: string | null }
+  | { kind: 'failed'; message: string };
 
 const EMPTY_FORM: FormState = { projectName: '', stationName: '', latitude: '', esal: '', speed: '', acceptConsider: false };
 
@@ -55,7 +62,8 @@ function periodOf(climate: ClimateView): string {
   return years.length ? `${Math.min(...years)}–${Math.max(...years)}` : '';
 }
 
-export function Analyzer() {
+export function Analyzer({ onSaved }: { onSaved?: (id: string) => void }) {
+  const { user } = useAuth();
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [file, setFile] = useState<LoadedFile | null>(null);
   const [loaded, setLoaded] = useState<Loaded | null>(null);
@@ -98,14 +106,15 @@ export function Analyzer() {
           acceptConsider: view.inputs.acceptConsiderBump,
         });
         setLoaded({ climate: view.climate, station: view.station, fileName: view.file.name });
-        setSave({ kind: 'saved', id: view.id });
+        setSave({ kind: 'saved', id: view.id, ownerId: view.ownerId });
       })
       .catch((e: unknown) => setMessage(e instanceof ApiError ? e.message : 'This analysis could not be opened.'))
       .finally(() => setBusy(false));
   }, []);
 
-  // Keep the saved copy in step with the inputs (after a short pause in typing).
-  const savedId = save.kind === 'saved' ? save.id : null;
+  // Keep the owner's saved copy in step with the inputs (after a short pause in typing).
+  const isOwner = save.kind === 'saved' && save.ownerId !== null && save.ownerId === user?.id;
+  const savedId = save.kind === 'saved' && isOwner ? save.id : null;
   useEffect(() => {
     if (!savedId || !inputs || errors.projectName) return;
     const timer = setTimeout(() => {
@@ -154,12 +163,13 @@ export function Analyzer() {
         designSpeedKmh: values.designSpeedKmh,
         acceptConsiderBump: current.acceptConsider,
       });
-      setSave({ kind: 'saved', id: view.id });
+      setSave({ kind: 'saved', id: view.id, ownerId: view.ownerId });
+      onSaved?.(view.id);
       window.history.replaceState(null, '', `?a=${view.id}`);
     } catch (e) {
       setSave({ kind: 'failed', message: e instanceof ApiError ? e.message : 'Not saved.' });
     }
-  }, []);
+  }, [onSaved]);
 
   const onAnalyse = useCallback(() => {
     setShowErrors(true);
@@ -229,7 +239,7 @@ export function Analyzer() {
             </nav>
             <div className="flex flex-wrap items-center gap-3">
               {report && <ExportButtons report={report} />}
-              <SaveBadge save={save} onRetry={() => file && inputs && saveToServer(file, form, inputs)} />
+              <SaveBadge save={save} isOwner={isOwner} onRetry={() => file && inputs && saveToServer(file, form, inputs)} />
             </div>
           </div>
           <ResultHero grade={grade} projectName={form.projectName.trim() || '—'}
@@ -250,7 +260,7 @@ export function Analyzer() {
   );
 }
 
-function SaveBadge({ save, onRetry }: { save: SaveState; onRetry: () => void }) {
+function SaveBadge({ save, isOwner, onRetry }: { save: SaveState; isOwner: boolean; onRetry: () => void }) {
   const [copied, setCopied] = useState(false);
   if (save.kind === 'idle') return null;
   if (save.kind === 'saving') return <span className="inline-flex items-center gap-1.5 text-muted"><Cloud size={16} /> Saving…</span>;
@@ -258,13 +268,15 @@ function SaveBadge({ save, onRetry }: { save: SaveState; onRetry: () => void }) 
     return (
       <span className="inline-flex items-center gap-2 text-warn">
         <Alert size={16} /> Not saved: {save.message}
-        <button type="button" onClick={onRetry} className="rounded-md border border-line px-2 py-0.5 text-ink hover:bg-raised">Retry</button>
+        {save.message.startsWith('Please log in')
+          ? <Link href="/login?next=/analyse" className="rounded-md border border-line px-2 py-0.5 text-ink hover:bg-raised">Log in</Link>
+          : <button type="button" onClick={onRetry} className="rounded-md border border-line px-2 py-0.5 text-ink hover:bg-raised">Retry</button>}
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-2 text-ok">
-      <Check size={16} /> Saved
+    <span className={`inline-flex items-center gap-2 ${isOwner ? 'text-ok' : 'text-muted'}`}>
+      {isOwner ? <><Check size={16} /> Saved</> : <span title="Changes you make here are not saved">Shared view (read-only)</span>}
       <button type="button" className="rounded-md border border-line px-2 py-0.5 text-ink hover:bg-raised"
         onClick={() => {
           void navigator.clipboard?.writeText(window.location.href);

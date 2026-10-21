@@ -1,29 +1,33 @@
 @import "tailwindcss";
 
 /*
- * Design tokens. Components use the semantic names (bg-surface, text-muted, border-line, …) so light and
- * dark mode switch in one place. The theme follows the operating system unless the header toggle stores
- * a choice in <html data-theme="light|dark">.
+ * Design tokens. Components use the semantic names (bg-surface, text-muted, border-line, …) so both themes
+ * switch in one place. The look follows a dark indigo + purple style; dark is the default and the header
+ * toggle can store "light" in <html data-theme>.
  *
  * Chart colours (dataviz reference palette): red for high temperatures, blue for low ones; each heatmap
  * uses one hue from light to dark. Text never takes a series colour.
+ * Accent squares (yellow, blue, pink, purple) are decoration only.
  */
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme inline {
-  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --font-sans: var(--font-inter), "Inter", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --font-display: var(--font-space-mono), "Space Mono", ui-monospace, Consolas, monospace;
   --font-serif: "Times New Roman", Times, Tinos, "Liberation Serif", serif;
 
   --color-canvas: var(--canvas);
   --color-surface: var(--surface);
   --color-raised: var(--raised);
+  --color-band: var(--band);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-subtle: var(--subtle);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-on-primary: var(--on-primary);
   --color-hi: var(--hi);
   --color-hi-strong: var(--hi-strong);
@@ -37,19 +41,56 @@
   --color-bad-soft: var(--bad-soft);
   --color-warn: var(--warn);
   --color-warn-soft: var(--warn-soft);
+  --color-accent-yellow: #f9d65c;
+  --color-accent-blue: #2f80ff;
+  --color-accent-pink: #f7a8cb;
+  --color-accent-purple: #7b5cff;
 }
 
-:root {
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #1c1a35;
+  --surface: #27244a;
+  --raised: #302d58;
+  --ink: #f5f4ff;
+  --muted: #c4c1e4;
+  --subtle: #9d99c7;
+  --line: #38356a;
+  --line-strong: #4a4682;
+  --primary: #7b5cff;
+  --primary-hover: #8d73ff;
+  --on-primary: #ffffff;
+  --hi: #ff6b6b;
+  --hi-strong: #ffa3a3;
+  --hi-soft: rgb(255 107 107 / 0.14);
+  --lo: #4f9cff;
+  --lo-strong: #9cc6ff;
+  --lo-soft: rgb(79 156 255 / 0.15);
+  --ok: #4ade80;
+  --ok-soft: rgb(74 222 128 / 0.13);
+  --bad: #ff7a70;
+  --bad-soft: rgb(255 122 112 / 0.13);
+  --warn: #fdc04a;
+  --warn-soft: rgb(253 192 74 / 0.13);
+  --grid: #34316a;
+  --band: #15132b;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.35);
+  --shadow-float: 0 18px 50px -12px rgb(10 8 30 / 0.7);
+}
+
+:root[data-theme="light"] {
   color-scheme: light;
-  --canvas: #f3f4f6;
+  --canvas: #f6f5ff;
   --surface: #ffffff;
-  --raised: #f7f7f8;
-  --ink: #0b0b0d;
-  --muted: #52525b;
-  --subtle: #71717a;
-  --line: #e4e4e7;
-  --line-strong: #cfcfd6;
-  --primary: #0f172a;
+  --raised: #f1effd;
+  --ink: #17153a;
+  --muted: #4c4878;
+  --subtle: #6e6a98;
+  --line: #e3e0f6;
+  --line-strong: #cbc6ee;
+  --primary: #6644f0;
+  --primary-hover: #5533e0;
   --on-primary: #ffffff;
   --hi: #e34948;
   --hi-strong: #9b2424;
@@ -63,65 +104,10 @@
   --bad-soft: #fef3f2;
   --warn: #93370d;
   --warn-soft: #fffaeb;
-  --grid: #ececef;
-  --shadow-card: 0 1px 2px rgb(16 16 20 / 0.05), 0 1px 1px rgb(16 16 20 / 0.03);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --canvas: #0d0d0f;
-    --surface: #161619;
-    --raised: #1e1e22;
-    --ink: #f0efec;
-    --muted: #b6b5ae;
-    --subtle: #94938c;
-    --line: #2b2b30;
-    --line-strong: #3d3d44;
-    --primary: #f0efec;
-    --on-primary: #0d0d0f;
-    --hi: #e66767;
-    --hi-strong: #ff9c9c;
-    --hi-soft: rgb(230 103 103 / 0.14);
-    --lo: #3987e5;
-    --lo-strong: #8cbcf5;
-    --lo-soft: rgb(57 135 229 / 0.14);
-    --ok: #4ade80;
-    --ok-soft: rgb(74 222 128 / 0.12);
-    --bad: #f97066;
-    --bad-soft: rgb(249 112 102 / 0.12);
-    --warn: #fdb022;
-    --warn-soft: rgb(253 176 34 / 0.12);
-    --grid: #26262b;
-    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5);
-  }
-}
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --canvas: #0d0d0f;
-  --surface: #161619;
-  --raised: #1e1e22;
-  --ink: #f0efec;
-  --muted: #b6b5ae;
-  --subtle: #94938c;
-  --line: #2b2b30;
-  --line-strong: #3d3d44;
-  --primary: #f0efec;
-  --on-primary: #0d0d0f;
-  --hi: #e66767;
-  --hi-strong: #ff9c9c;
-  --hi-soft: rgb(230 103 103 / 0.14);
-  --lo: #3987e5;
-  --lo-strong: #8cbcf5;
-  --lo-soft: rgb(57 135 229 / 0.14);
-  --ok: #4ade80;
-  --ok-soft: rgb(74 222 128 / 0.12);
-  --bad: #f97066;
-  --bad-soft: rgb(249 112 102 / 0.12);
-  --warn: #fdb022;
-  --warn-soft: rgb(253 176 34 / 0.12);
-  --grid: #26262b;
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5);
+  --grid: #ebe9f7;
+  --band: #ece9fe;
+  --shadow-card: 0 1px 2px rgb(23 21 58 / 0.06), 0 1px 1px rgb(23 21 58 / 0.04);
+  --shadow-float: 0 18px 50px -14px rgb(23 21 58 / 0.3);
 }
 
 body {
@@ -139,6 +125,23 @@ body {
 }
 .shadow-card {
   box-shadow: var(--shadow-card);
+}
+.shadow-float {
+  box-shadow: var(--shadow-float);
+}
+
+/* Big headings in the display font. */
+.display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Soft purple glow behind the landing hero. */
+.hero-glow {
+  background:
+    radial-gradient(60% 70% at 85% 20%, rgb(123 92 255 / 0.28), transparent 70%),
+    radial-gradient(45% 60% at 0% 100%, rgb(47 128 255 / 0.12), transparent 70%);
 }
 
 /* Heatmap cells without enough data. */
@@ -165,7 +168,8 @@ body {
 
 @media print {
   :root,
-  :root[data-theme="dark"] {
+  :root[data-theme="dark"],
+  :root[data-theme="light"] {
     color-scheme: light;
     --canvas: #ffffff;
     --surface: #ffffff;

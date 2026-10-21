@@ -19,9 +19,12 @@ const FORM = { projectName: 'Meisso – Dire Dawa', designEsalMillions: '115.6',
 describe('Superpave PG API', () => {
   let app: INestApplication;
   let http: ReturnType<typeof request>;
+  let auth: string;
 
   beforeAll(async () => {
     ({ app, http } = await startApp());
+    const res = await http.post('/auth/register').send({ email: 'Engineer@Example.com ', password: 'asphalt-2026', name: 'Test' });
+    auth = `Bearer ${res.body.accessToken}`;
   });
 
   afterAll(async () => {
@@ -29,7 +32,7 @@ describe('Superpave PG API', () => {
   });
 
   function upload(file: Buffer | null, fields: Record<string, string> = FORM, fileName = 'station.csv') {
-    const req = http.post('/analyses');
+    const req = http.post('/analyses').set('Authorization', auth);
     for (const [k, v] of Object.entries(fields)) req.field(k, v);
     if (file) req.attach('file', file, fileName);
     return req;
@@ -76,11 +79,11 @@ describe('Superpave PG API', () => {
 
     it('PATCH /analyses/:id recalculates without the file (the "consider" toggle)', async () => {
       // 20 M ESAL at 100 km/h is a "consider +1 grade" case.
-      const off = await http.patch(`/analyses/${saved.id}`).send({ designEsalMillions: 20 }).expect(200);
+      const off = await http.patch(`/analyses/${saved.id}`).set('Authorization', auth).send({ designEsalMillions: 20 }).expect(200);
       expect(off.body.result.traffic.isConsiderCase).toBe(true);
       expect(off.body.result.traffic.gradesAdded).toBe(0);
 
-      const on = await http.patch(`/analyses/${saved.id}`).send({ acceptConsiderBump: true }).expect(200);
+      const on = await http.patch(`/analyses/${saved.id}`).set('Authorization', auth).send({ acceptConsiderBump: true }).expect(200);
       expect(on.body.inputs).toMatchObject({ designEsalMillions: 20, acceptConsiderBump: true });
       expect(on.body.result.traffic.gradesAdded).toBe(1);
       expect(on.body.result.finalGrade.high).toBe(off.body.result.finalGrade.high + 6);
@@ -91,7 +94,7 @@ describe('Superpave PG API', () => {
     });
 
     it('PATCH can rename the project and station', async () => {
-      const res = await http.patch(`/analyses/${saved.id}`).send({ projectName: 'Lot 2', stationName: 'Meiso' }).expect(200);
+      const res = await http.patch(`/analyses/${saved.id}`).set('Authorization', auth).send({ projectName: 'Lot 2', stationName: 'Meiso' }).expect(200);
       expect(res.body).toMatchObject({ projectName: 'Lot 2', stationName: 'Meiso' });
     });
   });
@@ -122,7 +125,7 @@ describe('Superpave PG API', () => {
 
     it('PATCH checks its fields too', async () => {
       const created = await upload(dailyCsv(STATION), { ...FORM, latitude: '9' }).expect(201);
-      const res = await http.patch(`/analyses/${created.body.id}`).send({ designSpeedKmh: 500 }).expect(400);
+      const res = await http.patch(`/analyses/${created.body.id}`).set('Authorization', auth).send({ designSpeedKmh: 500 }).expect(400);
       expect(res.body.message).toBe('Design speed must be a number from 0 to 200 km/h.');
     });
   });
@@ -150,6 +153,75 @@ describe('Superpave PG API', () => {
     it('a file over 10 MB', async () => {
       const res = await upload(Buffer.alloc(10 * 1024 * 1024 + 1, 65)).expect(413);
       expect(res.body.message).toBe('The file is larger than 10 MB. Upload one station at a time.');
+    });
+  });
+
+  describe('accounts', () => {
+    it('register gives a token, stores the email in lower case and never returns the password', async () => {
+      const res = await http.post('/auth/register').send({ email: ' New@Example.com', password: 'bitumen-70-10' }).expect(201);
+      expect(res.body.accessToken).toEqual(expect.any(String));
+      expect(res.body.user).toEqual({ id: expect.any(String), email: 'new@example.com', name: null });
+      expect(JSON.stringify(res.body)).not.toContain('bitumen');
+    });
+
+    it('one account per email', async () => {
+      const res = await http.post('/auth/register').send({ email: 'engineer@example.com', password: 'another-pass' }).expect(409);
+      expect(res.body).toEqual({ message: 'An account with this email already exists. Log in instead.', code: 'EMAIL_TAKEN' });
+    });
+
+    it.each([
+      [{ email: 'not-an-email', password: 'asphalt-2026' }, 'Enter a valid email address.'],
+      [{ email: 'a@b.com', password: 'short' }, 'The password must be at least 8 characters.'],
+    ])('register rejects %p', async (body, message) => {
+      const res = await http.post('/auth/register').send(body).expect(400);
+      expect(res.body).toEqual({ message, code: 'INVALID_INPUT' });
+    });
+
+    it('login with the right password; one message for a wrong email or password', async () => {
+      const ok = await http.post('/auth/login').send({ email: 'ENGINEER@example.com', password: 'asphalt-2026' }).expect(200);
+      expect(ok.body.user).toMatchObject({ email: 'engineer@example.com', name: 'Test' });
+      for (const body of [{ email: 'engineer@example.com', password: 'wrong-one' }, { email: 'nobody@example.com', password: 'asphalt-2026' }]) {
+        const bad = await http.post('/auth/login').send(body).expect(401);
+        expect(bad.body).toEqual({ message: 'Wrong email or password.', code: 'WRONG_LOGIN' });
+      }
+    });
+
+    it('GET /auth/me needs a valid token', async () => {
+      const me = await http.get('/auth/me').set('Authorization', auth).expect(200);
+      expect(me.body.email).toBe('engineer@example.com');
+      const res = await http.get('/auth/me').set('Authorization', 'Bearer nonsense').expect(401);
+      expect(res.body).toEqual({ message: 'Your session has expired. Please log in again.', code: 'SIGNED_OUT' });
+    });
+
+    it('a new analysis needs a log-in', async () => {
+      const res = await http.post('/analyses').field('projectName', 'X').attach('file', dailyCsv(STATION), 'a.csv').expect(401);
+      expect(res.body).toEqual({ message: 'Please log in first.', code: 'SIGNED_OUT' });
+    });
+
+    it('lists only my analyses; others can open a link but not change or delete it', async () => {
+      const mine = await upload(dailyCsv(STATION), { ...FORM, projectName: 'Mine', latitude: '9' }).expect(201);
+      expect(mine.body.ownerId).toEqual(expect.any(String));
+
+      const other = await http.post('/auth/register').send({ email: 'other@example.com', password: 'other-pass-1' }).expect(201);
+      const otherAuth = `Bearer ${other.body.accessToken}`;
+
+      const list = await http.get('/analyses').set('Authorization', auth).expect(200);
+      expect(list.body[0]).toMatchObject({
+        id: mine.body.id, projectName: 'Mine', finalGrade: mine.body.result.finalGrade.label,
+        binderType: mine.body.result.binderType.name, latitude: 9,
+      });
+      expect(list.body[0].climate).toBeUndefined();
+      expect((await http.get('/analyses').set('Authorization', otherAuth).expect(200)).body).toEqual([]);
+      await http.get('/analyses').expect(401);
+
+      await http.get(`/analyses/${mine.body.id}`).expect(200);
+      const patch = await http.patch(`/analyses/${mine.body.id}`).set('Authorization', otherAuth).send({ projectName: 'Taken' }).expect(403);
+      expect(patch.body).toEqual({ message: 'Only the person who made this analysis can change it.', code: 'NOT_OWNER' });
+      await http.delete(`/analyses/${mine.body.id}`).set('Authorization', otherAuth).expect(403);
+      await http.patch(`/analyses/${mine.body.id}`).send({ projectName: 'Taken' }).expect(401);
+
+      await http.delete(`/analyses/${mine.body.id}`).set('Authorization', auth).expect(204);
+      await http.get(`/analyses/${mine.body.id}`).expect(404);
     });
   });
 

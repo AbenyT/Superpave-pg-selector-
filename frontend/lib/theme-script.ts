@@ -2,5 +2,5 @@
 
 export const THEME_STORAGE_KEY = 'pg-selector-theme';
 
-/** Runs before the page paints (inlined in <head>) so a stored dark choice never flashes light. */
-export const THEME_BOOT_SCRIPT = `try{var t=localStorage.getItem('${THEME_STORAGE_KEY}');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}`;
+/** Runs before the page paints (inlined in <head>): dark unless "light" was chosen, so the page never flashes. */
+export const THEME_BOOT_SCRIPT = `try{document.documentElement.dataset.theme=localStorage.getItem('${THEME_STORAGE_KEY}')==='light'?'light':'dark'}catch(e){document.documentElement.dataset.theme='dark'}`;

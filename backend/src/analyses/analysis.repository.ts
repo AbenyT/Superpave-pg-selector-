@@ -16,6 +16,39 @@ export interface AnalysisRecord {
   climate: ClimateAnalysis;
   result: GradeResult;
   engineVersion: string;
+  /** The account that made it; null for analyses saved before accounts existed. */
+  ownerId: string | null;
+}
+
+/** One line of the "My analyses" list (no yearly data, so the list stays small). */
+export interface AnalysisSummary {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  projectName: string;
+  stationName: string | null;
+  latitude: number;
+  designEsalMillions: number;
+  designSpeedKmh: number;
+  climateGrade: string;
+  finalGrade: string;
+  binderType: string;
+}
+
+export function summaryOf(record: AnalysisRecord): AnalysisSummary {
+  return {
+    id: record.id,
+    createdAt: record.createdAt,
+    updatedAt: record.updatedAt,
+    projectName: record.projectName,
+    stationName: record.stationName,
+    latitude: record.inputs.latitude,
+    designEsalMillions: record.inputs.designEsalMillions,
+    designSpeedKmh: record.inputs.designSpeedKmh,
+    climateGrade: record.result.climateGrade.label,
+    finalGrade: record.result.finalGrade.label,
+    binderType: record.result.binderType.name,
+  };
 }
 
 export type NewAnalysis = Omit<AnalysisRecord, 'id' | 'createdAt' | 'updatedAt'>;
@@ -27,6 +60,9 @@ export abstract class AnalysesRepository {
   abstract create(data: NewAnalysis): Promise<AnalysisRecord>;
   abstract findById(id: string): Promise<AnalysisRecord | null>;
   abstract update(id: string, changes: AnalysisChanges): Promise<AnalysisRecord>;
+  /** The owner's analyses, newest change first. */
+  abstract listByOwner(ownerId: string): Promise<AnalysisSummary[]>;
+  abstract delete(id: string): Promise<void>;
   /** 'up' / 'down' for the database; always 'up' for memory. */
   abstract ping(): Promise<'up' | 'down'>;
 }
@@ -54,6 +90,17 @@ export class MemoryAnalysesRepository extends AnalysesRepository {
     const updated = { ...record, ...structuredClone(changes), updatedAt: new Date() };
     this.items.set(id, updated);
     return structuredClone(updated);
+  }
+
+  async listByOwner(ownerId: string): Promise<AnalysisSummary[]> {
+    return [...this.items.values()]
+      .filter((r) => r.ownerId === ownerId)
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+      .map(summaryOf);
+  }
+
+  async delete(id: string): Promise<void> {
+    this.items.delete(id);
   }
 
   async ping(): Promise<'up'> {

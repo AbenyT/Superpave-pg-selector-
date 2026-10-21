@@ -19,5 +19,7 @@ services:
         sync: false
       - key: DIRECT_URL # the same Session pooler string, also ending with ?schema=superpave
         sync: false
+      - key: JWT_SECRET # signs log-in tokens; Render makes a random one
+        generateValue: true
       - key: CORS_ORIGINS # e.g. https://superpave-pg-selector.vercel.app,https://superpave-pg-selector-*.vercel.app
         sync: false

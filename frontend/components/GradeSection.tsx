@@ -31,7 +31,7 @@ export function ResultHero({
       <div className="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.6fr)]">
         <div className="bg-primary px-6 py-6 text-on-primary sm:px-8">
           <div className="text-xs font-medium uppercase tracking-[0.14em] opacity-70">Recommended binder</div>
-          <div className="num mt-2 text-5xl font-extrabold tracking-tight sm:text-6xl">{gradeText(grade.finalGrade.label)}</div>
+          <div className="display num mt-2 text-5xl sm:text-6xl">{gradeText(grade.finalGrade.label)}</div>
           <div className="mt-3 text-sm opacity-85">
             Climate {gradeText(grade.climateGrade.label)} → {bump}
           </div>

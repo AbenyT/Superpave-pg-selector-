@@ -1,9 +1,9 @@
 import { createHash } from 'crypto';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { analyseClimate, computeGrade, DesignInputs, ENGINE_VERSION } from '@pg/engine';
 import { readTemperatureFile } from '@pg/parser';
 import { CreateAnalysisDto, UpdateAnalysisDto } from './analysis.dto';
-import { AnalysesRepository, AnalysisRecord } from './analysis.repository';
+import { AnalysesRepository, AnalysisRecord, AnalysisSummary } from './analysis.repository';
 
 export interface UploadedTemperatureFile {
   originalname: string;
@@ -28,6 +28,8 @@ export function toView(record: AnalysisRecord) {
     station: record.station,
     climate,
     result: record.result,
+    /** Lets the page tell the owner (who may change it) from someone opening a shared link (read-only). */
+    ownerId: record.ownerId,
   };
 }
 
@@ -38,7 +40,7 @@ export class AnalysesService {
   constructor(private readonly repository: AnalysesRepository) {}
 
   /** Re-reads and re-checks the uploaded file on the server, runs the engine and saves the analysis. */
-  async create(file: UploadedTemperatureFile | undefined, dto: CreateAnalysisDto): Promise<AnalysisView> {
+  async create(file: UploadedTemperatureFile | undefined, dto: CreateAnalysisDto, ownerId: string): Promise<AnalysisView> {
     if (!file || file.buffer.length === 0) {
       throw new BadRequestException({ message: 'Upload a temperature file (CSV or Excel).', code: 'NO_FILE' });
     }
@@ -65,17 +67,19 @@ export class AnalysesService {
       climate,
       result,
       engineVersion: ENGINE_VERSION,
+      ownerId,
     });
     return toView(record);
   }
 
+  /** Anyone with the link can open an analysis (its id is a long random code); only the owner can change it. */
   async get(id: string): Promise<AnalysisView> {
     return toView(await this.find(id));
   }
 
   /** Changes inputs of a saved analysis and recalculates the grade from its saved yearly results. */
-  async update(id: string, dto: UpdateAnalysisDto): Promise<AnalysisView> {
-    const record = await this.find(id);
+  async update(id: string, dto: UpdateAnalysisDto, userId: string): Promise<AnalysisView> {
+    const record = await this.findOwned(id, userId);
     const inputs: Required<DesignInputs> = {
       latitude: dto.latitude ?? record.inputs.latitude,
       designEsalMillions: dto.designEsalMillions ?? record.inputs.designEsalMillions,
@@ -90,6 +94,23 @@ export class AnalysesService {
       engineVersion: ENGINE_VERSION,
     });
     return toView(updated);
+  }
+
+  list(userId: string): Promise<AnalysisSummary[]> {
+    return this.repository.listByOwner(userId);
+  }
+
+  async remove(id: string, userId: string): Promise<void> {
+    await this.findOwned(id, userId);
+    await this.repository.delete(id);
+  }
+
+  private async findOwned(id: string, userId: string): Promise<AnalysisRecord> {
+    const record = await this.find(id);
+    if (record.ownerId !== userId) {
+      throw new ForbiddenException({ message: 'Only the person who made this analysis can change it.', code: 'NOT_OWNER' });
+    }
+    return record;
   }
 
   private async find(id: string): Promise<AnalysisRecord> {

@@ -2,7 +2,8 @@ import { OnModuleDestroy } from '@nestjs/common';
 import { Analysis, Prisma, PrismaClient } from '@prisma/client';
 import { ClimateAnalysis, GradeResult } from '@pg/engine';
 import { StationInfo } from '@pg/parser';
-import { AnalysesRepository, AnalysisChanges, AnalysisRecord, NewAnalysis } from './analysis.repository';
+import { sharedPrisma } from '../storage';
+import { AnalysesRepository, AnalysisChanges, AnalysisRecord, AnalysisSummary, NewAnalysis } from './analysis.repository';
 
 const json = (value: unknown) => value as Prisma.InputJsonValue;
 
@@ -25,6 +26,7 @@ function toRecord(row: Analysis): AnalysisRecord {
     climate: row.climate as unknown as ClimateAnalysis,
     result: row.result as unknown as GradeResult,
     engineVersion: row.engineVersion,
+    ownerId: row.ownerId,
   };
 }
 
@@ -45,7 +47,7 @@ function summaryColumns(data: Pick<NewAnalysis, 'inputs' | 'result'>) {
 export class PrismaAnalysesRepository extends AnalysesRepository implements OnModuleDestroy {
   readonly kind = 'database' as const;
 
-  constructor(private readonly prisma: PrismaClient = new PrismaClient()) {
+  constructor(private readonly prisma: PrismaClient = sharedPrisma()) {
     super();
   }
 
@@ -64,6 +66,7 @@ export class PrismaAnalysesRepository extends AnalysesRepository implements OnMo
         station: json(data.station),
         climate: json(data.climate),
         engineVersion: data.engineVersion,
+        ownerId: data.ownerId,
       },
     });
     return toRecord(row);
@@ -85,6 +88,23 @@ export class PrismaAnalysesRepository extends AnalysesRepository implements OnMo
       },
     });
     return toRecord(row);
+  }
+
+  async listByOwner(ownerId: string): Promise<AnalysisSummary[]> {
+    const rows = await this.prisma.analysis.findMany({
+      where: { ownerId },
+      orderBy: { updatedAt: 'desc' },
+      take: 500,
+      select: {
+        id: true, createdAt: true, updatedAt: true, projectName: true, stationName: true, latitude: true,
+        designEsalMillions: true, designSpeedKmh: true, climateGrade: true, finalGrade: true, result: true,
+      },
+    });
+    return rows.map(({ result, ...row }) => ({ ...row, binderType: (result as unknown as GradeResult).binderType?.name ?? '' }));
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.analysis.delete({ where: { id } });
   }
 
   async ping(): Promise<'up' | 'down'> {

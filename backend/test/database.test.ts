@@ -17,16 +17,21 @@ run('saving in PostgreSQL', () => {
   let app: INestApplication;
   let http: ReturnType<typeof request>;
   const created: string[] = [];
+  const email = `db-check-${Date.now()}@example.com`;
+  let auth: string;
 
   beforeAll(async () => {
     process.env.DATABASE_URL = url;
     process.env.DIRECT_URL = url;
     ({ app, http } = await startApp());
+    const res = await http.post('/auth/register').send({ email, password: 'database-check' }).expect(201);
+    auth = `Bearer ${res.body.accessToken}`;
   });
 
   afterAll(async () => {
     const prisma = new PrismaClient({ datasources: { db: { url } } });
     await prisma.analysis.deleteMany({ where: { id: { in: created } } });
+    await prisma.user.deleteMany({ where: { email } });
     await prisma.$disconnect();
     await app.close();
     delete process.env.DATABASE_URL;
@@ -37,9 +42,10 @@ run('saving in PostgreSQL', () => {
     expect(res.body).toMatchObject({ storage: 'database', database: 'up' });
   });
 
-  it('saves, reopens and updates an analysis', async () => {
+  it('saves, lists, reopens and updates an analysis under an account', async () => {
     const post = await http
       .post('/analyses')
+      .set('Authorization', auth)
       .field('projectName', 'Database check')
       .field('designEsalMillions', '20')
       .field('designSpeedKmh', '100')
@@ -50,7 +56,10 @@ run('saving in PostgreSQL', () => {
     const get = await http.get(`/analyses/${post.body.id}`).expect(200);
     expect(get.body).toEqual(post.body);
 
-    const patch = await http.patch(`/analyses/${post.body.id}`).send({ acceptConsiderBump: true }).expect(200);
+    const list = await http.get('/analyses').set('Authorization', auth).expect(200);
+    expect(list.body.map((a: { id: string }) => a.id)).toEqual([post.body.id]);
+
+    const patch = await http.patch(`/analyses/${post.body.id}`).set('Authorization', auth).send({ acceptConsiderBump: true }).expect(200);
     expect(patch.body.result.traffic.gradesAdded).toBe(1);
     expect(patch.body.climate).toEqual(post.body.climate);
 

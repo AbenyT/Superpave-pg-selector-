@@ -3,6 +3,7 @@ import { AnalysesController } from './analyses.controller';
 import { AnalysesService } from './analyses.service';
 import { AnalysesRepository, MemoryAnalysesRepository } from './analysis.repository';
 import { PrismaAnalysesRepository } from './prisma-analyses.repository';
+import { usesDatabase } from '../storage';
 
 @Module({
   controllers: [AnalysesController],
@@ -11,7 +12,7 @@ import { PrismaAnalysesRepository } from './prisma-analyses.repository';
     {
       provide: AnalysesRepository,
       useFactory: (): AnalysesRepository => {
-        if (process.env.DATABASE_URL) return new PrismaAnalysesRepository();
+        if (usesDatabase()) return new PrismaAnalysesRepository();
         new Logger('Storage').warn('DATABASE_URL is not set: analyses are kept in memory and lost on restart.');
         return new MemoryAnalysesRepository();
       },

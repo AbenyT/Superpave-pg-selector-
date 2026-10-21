@@ -12,7 +12,7 @@ Prepared by Abenezer Tilahun.
 | `engine/` | All calculations, pure TypeScript, with Jest tests. Used by both the backend and the page. |
 | `parser/` | Reads uploaded CSV / Excel files in any common layout and extracts the daily Tmax and Tmin. |
 | `backend/` | NestJS API: re-reads the uploaded file, runs the engine and saves each analysis (Prisma → Supabase PostgreSQL). |
-| `frontend/` | Next.js dashboard: inputs, graphs, heatmaps, SHRP/LTPP formulas, grade and specification table, PDF / Excel / PNG export. |
+| `frontend/` | Next.js site: landing page, log-in / sign-up, "My analyses" dashboard, and the analysis page (graphs, heatmaps, SHRP/LTPP formulas, grade and specification table, PDF / Excel / PNG export). |
 
 ## Run the tests
 
@@ -35,14 +35,31 @@ docker compose up -d
 
 Then set `DATABASE_URL` and `DIRECT_URL` in `backend/.env` to `postgresql://pg:pg@localhost:5434/pgselector?schema=superpave`, and run `npm run db:deploy --workspace backend`.
 
+### Pages
+
+| Address | What it is |
+|---|---|
+| `/` | Landing page with a sign-up form. Old links `/?a=<id>` are sent on to `/analyse?a=<id>`. |
+| `/register`, `/login` | Create an account / log in (email + password, as in the AASHTO 1993 app). |
+| `/dashboard` | My analyses: open or delete them. |
+| `/analyse` | A new analysis (needs an account). |
+| `/analyse?a=<id>` | A saved analysis. Anyone with the link can look; only the owner's changes are saved. |
+
+Site details (name, author, email, LinkedIn) are in `frontend/lib/site.ts`. Landing photos are in `frontend/public/landing/`.
+
 ### API
 
 | Request | What it does |
 |---|---|
 | `GET /health` | Server status and where analyses are saved. The page calls it on load to wake up Render. |
-| `POST /analyses` | Multipart form with `file`, `projectName`, `designEsalMillions` and `designSpeedKmh`. Optional fields: `stationName`, `latitude` (taken from the file if blank) and `acceptConsiderBump`. Returns the saved analysis. |
-| `GET /analyses/:id` | Reopens a saved analysis. |
-| `PATCH /analyses/:id` | Changes any of the inputs (JSON, no file). The grade is recalculated from the saved yearly results. |
+| `POST /auth/register` | `{ email, password, name? }` → `{ accessToken, user }`. Passwords are stored as bcrypt hashes only. |
+| `POST /auth/login` | `{ email, password }` → `{ accessToken, user }`. |
+| `GET /auth/me` | The logged-in user (send `Authorization: Bearer <token>`). |
+| `POST /analyses` | Logged in. Multipart form with `file`, `projectName`, `designEsalMillions` and `designSpeedKmh`. Optional fields: `stationName`, `latitude` (taken from the file if blank) and `acceptConsiderBump`. Returns the saved analysis. |
+| `GET /analyses` | Logged in. My analyses, newest first (summary only). |
+| `GET /analyses/:id` | Reopens a saved analysis (anyone with the link). |
+| `PATCH /analyses/:id` | Owner only. Changes any of the inputs (JSON, no file). The grade is recalculated from the saved yearly results. |
+| `DELETE /analyses/:id` | Owner only. |
 
 Every error reply is `{ "message": "one plain sentence", "code": "…" }`. The data-quality report is saved in the database but never sent to the page.
 
@@ -50,8 +67,8 @@ Every error reply is `{ "message": "one plain sentence", "code": "…" }`. The d
 
 | Part | Service | Settings |
 |---|---|---|
-| API | Render (free, Frankfurt) | Blueprint `render.yaml`; variables `DATABASE_URL`, `DIRECT_URL`, `CORS_ORIGINS` |
-| Database | Supabase (same project as the AASHTO app) | Session pooler string ending with `?schema=superpave` |
+| API | Render (free, Frankfurt) | Blueprint `render.yaml`; variables `DATABASE_URL`, `DIRECT_URL`, `CORS_ORIGINS`, `JWT_SECRET` (if it is missing, a key is derived from `DATABASE_URL`) |
+| Database | Supabase project `superpave-pg` | Session pooler string ending with `?schema=superpave`; tables `analyses` and `users` |
 | Web page | Vercel | Root Directory `frontend` (`frontend/vercel.json` builds the engine first); variable `NEXT_PUBLIC_API_URL` = the Render address |
 
 Every push to `main` deploys again automatically.
