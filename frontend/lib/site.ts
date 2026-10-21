@@ -7,7 +7,7 @@ export const SITE = {
   authorRole: 'Senior Pavement & Materials Engineer',
   email: 'abenytilahunccecc@gmail.com',
   /** Full profile URL, e.g. "https://www.linkedin.com/in/your-name". The LinkedIn links are hidden while it is empty. */
-  linkedin: '',
+  linkedin: 'https://www.linkedin.com/in/abenezer-tilahun-042a34151/',
   /** Fixed rather than computed: Next.js prerendering does not allow `new Date()` here. */
   copyrightYear: 2026,
 } as const;

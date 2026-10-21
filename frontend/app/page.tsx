@@ -1,12 +1,28 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { ArrowRight, Broom, Chart, Download, FileIcon, Flask, Grid, Layers, LinkIcon, Mail, Snow, Table, Thermo, Truck, Upload } from '@/components/icons';
+import type { StaticImageData } from 'next/image';
+import { ArrowRight, Broom, Chart, Download, FileIcon, Flask, Grid, Layers, LinkedIn, LinkIcon, Mail, Snow, Table, Thermo, Truck, Upload } from '@/components/icons';
 import { HeroAccount, OldLinkRedirect } from '@/components/landing/HeroAccount';
+import { HeroSlides, type Slide } from '@/components/landing/HeroSlides';
 import { Squares } from '@/components/Squares';
 import { mailto, SITE } from '@/lib/site';
-import binderDrums from '@/public/landing/binder-drums.jpg';
 import roller from '@/public/landing/asphalt-roller.jpg';
+import binderDrums from '@/public/landing/binder-drums.jpg';
+import drumsYard from '@/public/landing/bitumen-drums-yard.jpg';
+import pellets from '@/public/landing/bitumen-pellets.jpg';
+import openDrums from '@/public/landing/open-bitumen-drums.jpg';
+import paverAndRoller from '@/public/landing/paver-and-roller.jpg';
+import paverScreed from '@/public/landing/paver-screed.webp';
+import pavingTrain from '@/public/landing/paving-train.jpg';
+
+// Each photo is used once: the paving photos in the hero, the binder photos in "From the binder drum…".
+const HERO_SLIDES: Slide[] = [
+  { image: paverAndRoller, alt: 'A paver laying asphalt with a roller compacting behind it', caption: 'Paving and compaction' },
+  { image: pavingTrain, alt: 'Several pavers working side by side on a wide carriageway', caption: 'Paving in echelon' },
+  { image: paverScreed, alt: 'Crew checking the screed of an asphalt paver', caption: 'Screed control' },
+  { image: roller, alt: 'A tandem roller compacting fresh asphalt on a new road', caption: 'Final rolling' },
+];
 
 /** Landing page. Every number on it is either a fixed rule of the method or clearly marked as an example. */
 export default function Home() {
@@ -46,16 +62,13 @@ function Hero() {
           </h1>
           <p className="mt-5 max-w-lg text-base leading-relaxed text-muted sm:text-lg">
             Upload daily temperatures from any weather station and get the Superpave PG grade, the AASHTO M320
-            specification table and a full report — in seconds.
+            specification table and a full report, in seconds.
           </p>
           <div className="mt-8 max-w-sm"><HeroAccount /></div>
         </div>
 
         <div className="relative mx-auto w-full max-w-xl lg:max-w-none">
-          <div className="relative overflow-hidden rounded-[28px] border-4 border-primary/70 shadow-float">
-            <Image src={roller} alt="A tandem roller compacting fresh asphalt on a new road" placeholder="blur" priority
-              sizes="(min-width: 1024px) 600px, 100vw" className="aspect-[4/3] h-auto w-full object-cover" />
-          </div>
+          <HeroSlides slides={HERO_SLIDES} />
           <ul className="relative mx-auto -mt-7 grid w-fit grid-cols-3 gap-2 px-2 sm:-mt-8">
             {CHIPS.map(([Icon, label]) => (
               <li key={label} className="inline-flex items-center justify-between gap-2 rounded-full bg-primary py-1.5 pl-3.5 pr-1.5 text-sm font-semibold text-on-primary shadow-float">
@@ -281,40 +294,48 @@ function Field() {
   return (
     <section id="field" className="relative scroll-mt-20">
       <Squares items={[{ className: 'left-[44%] top-6 h-8 w-8 bg-accent-purple' }, { className: 'left-0 bottom-24 h-6 w-6 bg-accent-blue' }]} />
-      <div className="relative mx-auto grid max-w-7xl gap-6 px-4 py-16 sm:px-6 lg:grid-cols-2">
+      <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_1.15fr]">
         <div className="flex flex-col justify-center">
           <h2 className="display text-3xl leading-tight text-ink sm:text-4xl">From the binder drum to the finished mat</h2>
           <p className="mt-4 max-w-lg text-muted">
             The grade on the drum has to match the hottest and coldest days the road will see. Too soft and the
-            surface ruts in summer; too stiff and it cracks in the cold.
+            surface ruts in summer; too stiff and it cracks in the cold. Order the grade the climate needs: crude oil,
+            high-quality crude oil, or a polymer-modified binder.
           </p>
+          <div className="mt-8 rounded-3xl border border-line bg-surface p-6 sm:p-7">
+            <p className="display text-lg text-ink">Prepared by {SITE.author}</p>
+            <p className="mt-1 text-sm text-muted">{SITE.authorRole}</p>
+            <p className="mt-4 text-sm leading-relaxed text-muted">Questions about the method, or want it for your project? Get in touch.</p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a href={mailto(SITE.fullName)} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-on-primary transition hover:bg-primary-hover">
+                <Mail size={16} />Email me
+              </a>
+              {SITE.linkedin && (
+                <a href={SITE.linkedin} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg border border-line-strong px-4 py-2.5 text-sm font-semibold text-ink transition hover:border-primary">
+                  <LinkedIn size={16} />LinkedIn
+                </a>
+              )}
+            </div>
+          </div>
         </div>
-        <PhotoCard image={binderDrums} alt="Rows of steel bitumen drums in a warehouse" title="Binder supply"
-          text="Order the grade the climate needs: crude oil, high-quality crude oil, or a polymer-modified binder." />
-        <PhotoCard image={roller} alt="A tandem roller compacting a new asphalt surface" title="On the road"
-          text="A binder matched to the site resists rutting on hot days and thermal cracking on cold nights." />
-        <div className="flex flex-col justify-center rounded-3xl border border-line bg-surface p-6 sm:p-8">
-          <p className="display text-lg text-ink">Prepared by {SITE.author}</p>
-          <p className="mt-1 text-sm text-muted">{SITE.authorRole}</p>
-          <p className="mt-4 text-sm leading-relaxed text-muted">
-            Questions about the method, or want it for your project? Get in touch.
-          </p>
-          <a href={mailto(SITE.fullName)} className="mt-5 inline-flex w-fit items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-on-primary transition hover:bg-primary-hover">
-            <Mail size={16} />Email me
-          </a>
+        <div className="grid grid-cols-2 gap-4">
+          <PhotoTile image={binderDrums} alt="Rows of steel bitumen drums in a warehouse" caption="Binder storage" className="col-span-2 aspect-[16/9]" />
+          <PhotoTile image={drumsYard} alt="Sealed bitumen drums lined up in a refinery yard" caption="Ready for dispatch" className="row-span-2 min-h-64" />
+          <PhotoTile image={openDrums} alt="Open drums filled with liquid bitumen" caption="Bitumen in drums" className="aspect-square" />
+          <PhotoTile image={pellets} alt="Close-up of glossy solid bitumen pellets" caption="Solid bitumen" className="aspect-square" />
         </div>
       </div>
     </section>
   );
 }
 
-function PhotoCard({ image, alt, title, text }: { image: typeof roller; alt: string; title: string; text: string }) {
+function PhotoTile({ image, alt, caption, className }: { image: StaticImageData; alt: string; caption: string; className: string }) {
   return (
-    <figure className="overflow-hidden rounded-3xl border border-line bg-surface">
-      <Image src={image} alt={alt} placeholder="blur" sizes="(min-width: 1024px) 600px, 100vw" className="aspect-[16/10] h-auto w-full object-cover" />
-      <figcaption className="p-5">
-        <p className="display text-base text-ink">{title}</p>
-        <p className="mt-1 text-sm text-muted">{text}</p>
+    <figure className={`relative overflow-hidden rounded-3xl border border-line bg-raised ${className}`}>
+      <Image src={image} alt={alt} placeholder="blur" fill sizes="(min-width: 1024px) 640px, 100vw" className="object-cover" />
+      <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent px-4 pb-3 pt-8 text-sm font-semibold text-white">
+        {caption}
       </figcaption>
     </figure>
   );
