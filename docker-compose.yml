@@ -1,0 +1,14 @@
+# Local PostgreSQL for trying the API with a real database:  docker compose up -d
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: pg
+      POSTGRES_PASSWORD: pg
+      POSTGRES_DB: pgselector
+    ports:
+      - "5434:5432"   # 5433 is used by the AASHTO app's database
+    volumes:
+      - pgselector-data:/var/lib/postgresql/data
+volumes:
+  pgselector-data:

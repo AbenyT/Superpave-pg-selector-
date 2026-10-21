@@ -1,0 +1,23 @@
+# Render Blueprint for the Superpave PG API (https://render.com/docs/blueprint-spec).
+# Render -> New -> Blueprint -> pick this GitHub repo. It reads this file and asks for the variables marked
+# "sync: false" (the Supabase connection strings and the Vercel address).
+services:
+  - type: web
+    name: superpave-pg-api
+    runtime: node
+    plan: free
+    region: frankfurt # same region as the Supabase project (Central EU / Frankfurt)
+    # The API uses the shared calculation engine and file reader, so build those first (npm workspaces).
+    buildCommand: npm ci && npm run build --workspace engine && npm run build --workspace parser && npm run build --workspace backend
+    # Apply pending database migrations (schema "superpave"), then start the server.
+    startCommand: npm run start:render --workspace backend
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: DATABASE_URL # Supabase -> Connect -> Session pooler (port 5432), ending with ?schema=superpave
+        sync: false
+      - key: DIRECT_URL # the same Session pooler string, also ending with ?schema=superpave
+        sync: false
+      - key: CORS_ORIGINS # e.g. https://superpave-pg-selector.vercel.app,https://superpave-pg-selector-*.vercel.app
+        sync: false

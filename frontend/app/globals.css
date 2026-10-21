@@ -1,0 +1,180 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens. Components use the semantic names (bg-surface, text-muted, border-line, …) so light and
+ * dark mode switch in one place. The theme follows the operating system unless the header toggle stores
+ * a choice in <html data-theme="light|dark">.
+ *
+ * Chart colours (dataviz reference palette): red for high temperatures, blue for low ones; each heatmap
+ * uses one hue from light to dark. Text never takes a series colour.
+ */
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --font-serif: "Times New Roman", Times, Tinos, "Liberation Serif", serif;
+
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-hi: var(--hi);
+  --color-hi-strong: var(--hi-strong);
+  --color-hi-soft: var(--hi-soft);
+  --color-lo: var(--lo);
+  --color-lo-strong: var(--lo-strong);
+  --color-lo-soft: var(--lo-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+}
+
+:root {
+  color-scheme: light;
+  --canvas: #f3f4f6;
+  --surface: #ffffff;
+  --raised: #f7f7f8;
+  --ink: #0b0b0d;
+  --muted: #52525b;
+  --subtle: #71717a;
+  --line: #e4e4e7;
+  --line-strong: #cfcfd6;
+  --primary: #0f172a;
+  --on-primary: #ffffff;
+  --hi: #e34948;
+  --hi-strong: #9b2424;
+  --hi-soft: #fdecec;
+  --lo: #2a78d6;
+  --lo-strong: #104281;
+  --lo-soft: #e8f1fc;
+  --ok: #0f7a3a;
+  --ok-soft: #e9f8ef;
+  --bad: #b42318;
+  --bad-soft: #fef3f2;
+  --warn: #93370d;
+  --warn-soft: #fffaeb;
+  --grid: #ececef;
+  --shadow-card: 0 1px 2px rgb(16 16 20 / 0.05), 0 1px 1px rgb(16 16 20 / 0.03);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --canvas: #0d0d0f;
+    --surface: #161619;
+    --raised: #1e1e22;
+    --ink: #f0efec;
+    --muted: #b6b5ae;
+    --subtle: #94938c;
+    --line: #2b2b30;
+    --line-strong: #3d3d44;
+    --primary: #f0efec;
+    --on-primary: #0d0d0f;
+    --hi: #e66767;
+    --hi-strong: #ff9c9c;
+    --hi-soft: rgb(230 103 103 / 0.14);
+    --lo: #3987e5;
+    --lo-strong: #8cbcf5;
+    --lo-soft: rgb(57 135 229 / 0.14);
+    --ok: #4ade80;
+    --ok-soft: rgb(74 222 128 / 0.12);
+    --bad: #f97066;
+    --bad-soft: rgb(249 112 102 / 0.12);
+    --warn: #fdb022;
+    --warn-soft: rgb(253 176 34 / 0.12);
+    --grid: #26262b;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #0d0d0f;
+  --surface: #161619;
+  --raised: #1e1e22;
+  --ink: #f0efec;
+  --muted: #b6b5ae;
+  --subtle: #94938c;
+  --line: #2b2b30;
+  --line-strong: #3d3d44;
+  --primary: #f0efec;
+  --on-primary: #0d0d0f;
+  --hi: #e66767;
+  --hi-strong: #ff9c9c;
+  --hi-soft: rgb(230 103 103 / 0.14);
+  --lo: #3987e5;
+  --lo-strong: #8cbcf5;
+  --lo-soft: rgb(57 135 229 / 0.14);
+  --ok: #4ade80;
+  --ok-soft: rgb(74 222 128 / 0.12);
+  --bad: #f97066;
+  --bad-soft: rgb(249 112 102 / 0.12);
+  --warn: #fdb022;
+  --warn-soft: rgb(253 176 34 / 0.12);
+  --grid: #26262b;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5);
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--lo);
+  outline-offset: 2px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+.shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+/* Heatmap cells without enough data. */
+.hatch {
+  background-image: repeating-linear-gradient(135deg, var(--line) 0 2px, transparent 2px 7px);
+}
+
+/* Recharts text follows the theme. */
+.recharts-text {
+  fill: var(--muted);
+}
+.recharts-cartesian-grid line {
+  stroke: var(--grid);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  :root,
+  :root[data-theme="dark"] {
+    color-scheme: light;
+    --canvas: #ffffff;
+    --surface: #ffffff;
+    --raised: #f7f7f8;
+    --ink: #0b0b0d;
+    --muted: #52525b;
+    --line: #e4e4e7;
+  }
+  .print-hidden {
+    display: none !important;
+  }
+}

@@ -1,0 +1,44 @@
+// Database table for the Superpave PG Binder Selector.
+//
+// The tables live in their own PostgreSQL schema (add ?schema=superpave to the connection
+// strings), so this app can share the Supabase project of the pavement design app without
+// touching its tables or its migration history.
+//
+// DATABASE_URL: used by the running app  (Supabase "Session pooler" connection string)
+// DIRECT_URL:   used by `prisma migrate`   (on Render: the same session pooler string)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// One saved analysis: the inputs, the yearly climate results and the PG grade.
+/// The yearly results are kept so the grade can be recalculated without the file.
+model Analysis {
+  id                 String   @id @default(uuid())
+  projectName        String   @map("project_name")
+  stationName        String?  @map("station_name")
+  latitude           Float
+  designEsalMillions Float    @map("design_esal_millions")
+  designSpeedKmh     Float    @map("design_speed_kmh")
+  acceptConsiderBump Boolean  @default(false) @map("accept_consider_bump")
+  reliabilityPercent Int      @default(98) @map("reliability_percent")
+  fileName           String   @map("file_name")
+  fileSha256         String   @map("file_sha256")
+  station            Json     // station details read from the file
+  climate            Json     // ClimateAnalysis: yearly 7-day maxima, yearly minima, data-quality report
+  result             Json     // GradeResult from the engine
+  climateGrade       String   @map("climate_grade")
+  finalGrade         String   @map("final_grade")
+  engineVersion      String   @map("engine_version")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@index([createdAt])
+  @@map("analyses")
+}

@@ -1,0 +1,27 @@
+{
+  "name": "@pg/frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Superpave PG Binder Selector web page - prepared by Abenezer Tilahun",
+  "scripts": {
+    "dev": "next dev --port 3100",
+    "build": "next build",
+    "start": "next start --port 3100"
+  },
+  "dependencies": {
+    "@pg/engine": "1.0.0",
+    "@pg/parser": "1.0.0",
+    "exceljs": "^4.4.0",
+    "next": "^16.4.2",
+    "pdfmake": "0.3.11",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "recharts": "^3.10.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "^4.3.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.3"
+  }
+}

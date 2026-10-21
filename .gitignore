@@ -1,0 +1,22 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+.next/
+*.log
+
+# Real station data stays on this PC
+parser/test/fixtures/private/
+colab/parity/files/
+colab/parity/ts_results.json
+__pycache__/
+frontend/public/__private/
+frontend/.next/
+frontend/next-env.d.ts
+
+# Files made from the Meisso station data stay on this PC
+colab/parity/notebook_preview_*.html
+docs/samples/
+docs/screenshots/

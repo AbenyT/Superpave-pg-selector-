@@ -1,0 +1,21 @@
+{
+  "name": "superpave-pg-selector",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Superpave PG Binder Selector - prepared by Abenezer Tilahun",
+  "workspaces": [
+    "engine",
+    "parser",
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace engine && npm run build --workspace parser && npm run build --workspace backend && npm run build --workspace frontend",
+    "test": "npm test --workspace engine --workspace parser --workspace backend",
+    "start:api": "npm run start:prod --workspace backend",
+    "dev:web": "npm run dev --workspace frontend"
+  },
+  "engines": {
+    "node": ">=22.12"
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "_note": "Laboratory tests of the PG specification. Original drawings (SVG, 160 x 120) and descriptions written for this app; used by the page, the PDF and the Colab notebook.",
+  "tests": [
+    {
+      "id": "flash",
+      "name": "Flash Point",
+      "device": "Cleveland open cup",
+      "standard": "AASHTO T 48",
+      "stage": "Original binder",
+      "color": "#8e44ad",
+      "purpose": "Safety check. The binder is heated in an open cup while a small flame passes over it; the flash point is the temperature at which the vapours first ignite briefly.",
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 120'><rect x='18' y='98' width='124' height='12' rx='3' fill='#e5e7eb' stroke='#1f2937' stroke-width='2'/><rect x='44' y='86' width='72' height='12' fill='#9ca3af' stroke='#1f2937' stroke-width='2'/><path d='M54 86 L58 62 L102 62 L106 86 Z' fill='#f4d47c' stroke='#1f2937' stroke-width='2'/><rect x='60' y='70' width='40' height='10' fill='#111827'/><rect x='97' y='12' width='7' height='58' rx='3.5' fill='#ffffff' stroke='#1f2937' stroke-width='2'/><line x1='100.5' y1='30' x2='100.5' y2='68' stroke='#e34948' stroke-width='3'/><circle cx='100.5' cy='70' r='5' fill='#e34948' stroke='#1f2937' stroke-width='2'/><line x1='14' y1='46' x2='66' y2='54' stroke='#1f2937' stroke-width='3' stroke-linecap='round'/><path d='M70 54 C76 46 74 40 69 34 C68 42 62 44 65 54 Z' fill='#f59e0b' stroke='#b45309' stroke-width='1.5'/></svg>"
+    },
+    {
+      "id": "rv",
+      "name": "Rotational Viscometer",
+      "device": "Brookfield-type viscometer with heated chamber",
+      "standard": "AASHTO T 316",
+      "stage": "Original binder",
+      "color": "#8e44ad",
+      "purpose": "A spindle turns in the hot binder and the torque gives its viscosity at 135 °C. It shows that the binder can be pumped and mixed, and gives mixing and compaction temperatures.",
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 120'><rect x='26' y='100' width='108' height='10' rx='3' fill='#e5e7eb' stroke='#1f2937' stroke-width='2'/><rect x='36' y='14' width='8' height='86' fill='#9ca3af' stroke='#1f2937' stroke-width='2'/><rect x='44' y='18' width='70' height='30' rx='5' fill='#2b8bd8' stroke='#1f2937' stroke-width='2'/><rect x='52' y='24' width='30' height='16' rx='2' fill='#d1fae5' stroke='#1f2937' stroke-width='1.5'/><circle cx='100' cy='32' r='5' fill='#ffffff' stroke='#1f2937' stroke-width='1.5'/><line x1='88' y1='48' x2='88' y2='86' stroke='#1f2937' stroke-width='3'/><rect x='82' y='76' width='12' height='14' rx='2' fill='#6b7280' stroke='#1f2937' stroke-width='1.5'/><rect x='68' y='64' width='40' height='36' rx='3' fill='#fca5a5' fill-opacity='0.6' stroke='#1f2937' stroke-width='2'/><rect x='72' y='78' width='32' height='18' fill='#111827' fill-opacity='0.85'/><path d='M76 58 A14 5 0 0 0 100 58' fill='none' stroke='#e34948' stroke-width='2' marker-end=''/><path d='M100 58 l-4 -3 m4 3 l-4 3' stroke='#e34948' stroke-width='2' fill='none'/></svg>"
+    },
+    {
+      "id": "dsr",
+      "name": "Dynamic Shear Rheometer",
+      "device": "Parallel-plate rheometer",
+      "standard": "AASHTO T 315",
+      "stage": "Original, RTFO and PAV binder",
+      "color": "#17a589",
+      "purpose": "A thin binder disc between two plates is twisted back and forth. The complex modulus G* and phase angle δ describe stiffness and elasticity: G*/sin δ controls rutting, G*·sin δ controls fatigue cracking.",
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 120'><rect x='22' y='100' width='116' height='10' rx='3' fill='#e5e7eb' stroke='#1f2937' stroke-width='2'/><rect x='50' y='78' width='60' height='22' fill='#9ca3af' stroke='#1f2937' stroke-width='2'/><rect x='56' y='66' width='48' height='12' rx='2' fill='#d1d5db' stroke='#1f2937' stroke-width='2'/><rect x='58' y='60' width='44' height='6' fill='#111827'/><rect x='56' y='48' width='48' height='12' rx='2' fill='#d1d5db' stroke='#1f2937' stroke-width='2'/><rect x='75' y='10' width='10' height='38' fill='#6b7280' stroke='#1f2937' stroke-width='2'/><path d='M50 30 A30 9 0 0 0 110 30' fill='none' stroke='#17a589' stroke-width='2.5'/><path d='M110 30 l-6 -3 m6 3 l-5 4' stroke='#17a589' stroke-width='2.5' fill='none'/><path d='M50 30 l6 -3 m-6 3 l5 4' stroke='#17a589' stroke-width='2.5' fill='none'/><text x='118' y='66' font-size='10' font-family='Arial' fill='#1f2937'>sample</text><line x1='104' y1='63' x2='116' y2='63' stroke='#1f2937' stroke-width='1'/></svg>"
+    },
+    {
+      "id": "rtfo",
+      "name": "Rolling Thin Film Oven",
+      "device": "RTFO with rotating bottle carriage",
+      "standard": "AASHTO T 240",
+      "stage": "Short-term ageing",
+      "color": "#e74c3c",
+      "purpose": "Simulates ageing during mixing and laying: thin binder films in rotating glass bottles are exposed to hot air at 163 °C for 85 minutes. The residue is tested in the DSR and the mass change is checked.",
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 120'><rect x='20' y='12' width='120' height='96' rx='6' fill='#e5e7eb' stroke='#1f2937' stroke-width='2'/><rect x='30' y='22' width='84' height='76' rx='4' fill='#fef3c7' stroke='#1f2937' stroke-width='2'/><circle cx='72' cy='60' r='28' fill='none' stroke='#6b7280' stroke-width='3'/><circle cx='72' cy='60' r='5' fill='#1f2937'/><g fill='#ffffff' stroke='#1f2937' stroke-width='1.5'><rect x='68' y='27' width='8' height='14' rx='2'/><rect x='68' y='79' width='8' height='14' rx='2'/><rect x='39' y='56' width='14' height='8' rx='2'/><rect x='91' y='56' width='14' height='8' rx='2'/><rect x='46' y='36' width='12' height='8' rx='2' transform='rotate(45 52 40)'/><rect x='86' y='76' width='12' height='8' rx='2' transform='rotate(45 92 80)'/><rect x='86' y='36' width='12' height='8' rx='2' transform='rotate(-45 92 40)'/><rect x='46' y='76' width='12' height='8' rx='2' transform='rotate(-45 52 80)'/></g><rect x='120' y='22' width='14' height='30' rx='2' fill='#111827'/><circle cx='127' cy='68' r='4' fill='#e34948'/><circle cx='127' cy='82' r='4' fill='#16a34a'/><path d='M58 22 A26 26 0 0 1 96 30' fill='none' stroke='#e74c3c' stroke-width='2'/><path d='M96 30 l-6 -1 m6 1 l-2 -6' stroke='#e74c3c' stroke-width='2' fill='none'/></svg>"
+    },
+    {
+      "id": "pav",
+      "name": "Pressure Aging Vessel",
+      "device": "Heated pressure vessel with pan rack",
+      "standard": "AASHTO R 28",
+      "stage": "Long-term ageing",
+      "color": "#e67e22",
+      "purpose": "Simulates several years of ageing in service: the RTFO residue in thin pans is held at high temperature under 2.10 MPa air pressure for 20 hours. The aged binder is then tested in the DSR, BBR and DTT.",
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 120'><rect x='24' y='102' width='112' height='8' rx='3' fill='#e5e7eb' stroke='#1f2937' stroke-width='2'/><rect x='40' y='34' width='80' height='68' rx='10' fill='#9ca3af' stroke='#1f2937' stroke-width='2'/><rect x='36' y='26' width='88' height='12' rx='3' fill='#6b7280' stroke='#1f2937' stroke-width='2'/><g fill='#1f2937'><circle cx='44' cy='32' r='2'/><circle cx='62' cy='32' r='2'/><circle cx='80' cy='32' r='2'/><circle cx='98' cy='32' r='2'/><circle cx='116' cy='32' r='2'/></g><rect x='52' y='46' width='56' height='48' rx='3' fill='#f3f4f6' stroke='#1f2937' stroke-width='1.5'/><g stroke='#1f2937' stroke-width='1.5'><line x1='56' y1='56' x2='104' y2='56'/><line x1='56' y1='68' x2='104' y2='68'/><line x1='56' y1='80' x2='104' y2='80'/></g><g fill='#111827'><rect x='60' y='52' width='40' height='3'/><rect x='60' y='64' width='40' height='3'/><rect x='60' y='76' width='40' height='3'/></g><line x1='80' y1='26' x2='80' y2='16' stroke='#1f2937' stroke-width='3'/><circle cx='80' cy='12' r='10' fill='#ffffff' stroke='#1f2937' stroke-width='2'/><line x1='80' y1='12' x2='86' y2='7' stroke='#e67e22' stroke-width='2'/></svg>"
+    },
+    {
+      "id": "bbr",
+      "name": "Bending Beam Rheometer",
+      "device": "Three-point bending in a cold bath",
+      "standard": "AASHTO T 313",
+      "stage": "PAV-aged binder, low temperature",
+      "color": "#2a78d6",
+      "purpose": "A small binder beam rests on two supports in a cold liquid bath and a constant load pushes its middle down. The deflection gives the creep stiffness S and its rate of change m, which control thermal cracking.",
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 120'><rect x='18' y='44' width='124' height='64' rx='4' fill='#dbeafe' stroke='#1f2937' stroke-width='2'/><rect x='20' y='56' width='120' height='50' fill='#93c5fd' fill-opacity='0.55'/><path d='M24 58 q8 -4 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0' fill='none' stroke='#2a78d6' stroke-width='1.5'/><polygon points='42,94 50,94 46,84' fill='#6b7280' stroke='#1f2937' stroke-width='1.5'/><polygon points='110,94 118,94 114,84' fill='#6b7280' stroke='#1f2937' stroke-width='1.5'/><rect x='38' y='78' width='84' height='6' fill='#111827'/><path d='M38 84 Q80 92 122 84' fill='none' stroke='#2a78d6' stroke-width='1.5' stroke-dasharray='3 2'/><rect x='76' y='12' width='8' height='60' fill='#6b7280' stroke='#1f2937' stroke-width='2'/><polygon points='74,72 86,72 80,78' fill='#1f2937'/><path d='M96 18 v24' stroke='#2a78d6' stroke-width='2.5'/><path d='M96 42 l-4 -6 m4 6 l4 -6' stroke='#2a78d6' stroke-width='2.5' fill='none'/><text x='102' y='30' font-size='10' font-family='Arial' fill='#1f2937'>P</text></svg>"
+    },
+    {
+      "id": "dtt",
+      "name": "Direct Tension Tester",
+      "device": "Tension test of a dog-bone specimen",
+      "standard": "AASHTO T 314",
+      "stage": "PAV-aged binder, low temperature",
+      "color": "#27ae60",
+      "purpose": "A small dog-bone binder specimen is pulled apart at low temperature until it breaks. The failure strain shows whether the binder can stretch enough before cracking; it is used when the BBR stiffness is between 300 and 600 MPa.",
+      "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 120'><rect x='10' y='22' width='140' height='76' rx='6' fill='none' stroke='#93c5fd' stroke-width='2' stroke-dasharray='5 4'/><rect x='22' y='44' width='22' height='32' rx='3' fill='#6b7280' stroke='#1f2937' stroke-width='2'/><rect x='116' y='44' width='22' height='32' rx='3' fill='#6b7280' stroke='#1f2937' stroke-width='2'/><path d='M44 48 L58 48 Q64 48 66 54 L94 54 Q96 48 102 48 L116 48 L116 72 L102 72 Q96 72 94 66 L66 66 Q64 72 58 72 L44 72 Z' fill='#111827' stroke='#1f2937' stroke-width='1.5'/><path d='M20 60 h-12' stroke='#27ae60' stroke-width='3'/><path d='M8 60 l6 -5 m-6 5 l6 5' stroke='#27ae60' stroke-width='3' fill='none'/><path d='M140 60 h12' stroke='#27ae60' stroke-width='3'/><path d='M152 60 l-6 -5 m6 5 l-6 5' stroke='#27ae60' stroke-width='3' fill='none'/><text x='58' y='92' font-size='10' font-family='Arial' fill='#1f2937'>cold chamber</text></svg>"
+    }
+  ]
+}
