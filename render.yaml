@@ -9,7 +9,7 @@ services:
     region: frankfurt # same region as the Supabase project (Central EU / Frankfurt)
     # The API uses the shared calculation engine and file reader, so build those first (npm workspaces).
     buildCommand: npm ci && npm run build --workspace engine && npm run build --workspace parser && npm run build --workspace backend
-    # Apply pending database migrations (schema "superpave"), then start the server.
+    # With a valid DATABASE_URL: apply migrations (schema "superpave") and start. Without one: start with memory storage.
     startCommand: npm run start:render --workspace backend
     healthCheckPath: /health
     envVars:
