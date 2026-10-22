@@ -42,6 +42,7 @@ Then set `DATABASE_URL` and `DIRECT_URL` in `backend/.env` to `postgresql://pg:p
 | `/` | Landing page with a sign-up form. Old links `/?a=<id>` are sent on to `/analyse?a=<id>`. |
 | `/register`, `/login` | Create an account / log in (email + password, as in the AASHTO 1993 app). |
 | `/dashboard` | My analyses: open or delete them. |
+| `/admin` | Site statistics for the owner (accounts, analyses, per day, grades). Visitor numbers are in Vercel → project → Analytics. |
 | `/analyse` | A new analysis (needs an account). |
 | `/analyse?a=<id>` | A saved analysis. Anyone with the link can look; only the owner's changes are saved. |
 
@@ -60,6 +61,7 @@ Site details (name, author, email, LinkedIn) are in `frontend/lib/site.ts`. Land
 | `GET /analyses/:id` | Reopens a saved analysis (anyone with the link). |
 | `PATCH /analyses/:id` | Owner only. Changes any of the inputs (JSON, no file). The grade is recalculated from the saved yearly results. |
 | `DELETE /analyses/:id` | Owner only. |
+| `GET /admin/stats` | Site owner only (`ADMIN_EMAILS`, default the author's email). Counts only, no names or emails. |
 
 Every error reply is `{ "message": "one plain sentence", "code": "…" }`. The data-quality report is saved in the database but never sent to the page.
 

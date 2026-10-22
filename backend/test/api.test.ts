@@ -160,7 +160,7 @@ describe('Superpave PG API', () => {
     it('register gives a token, stores the email in lower case and never returns the password', async () => {
       const res = await http.post('/auth/register').send({ email: ' New@Example.com', password: 'bitumen-70-10' }).expect(201);
       expect(res.body.accessToken).toEqual(expect.any(String));
-      expect(res.body.user).toEqual({ id: expect.any(String), email: 'new@example.com', name: null });
+      expect(res.body.user).toEqual({ id: expect.any(String), email: 'new@example.com', name: null, isAdmin: false });
       expect(JSON.stringify(res.body)).not.toContain('bitumen');
     });
 
@@ -222,6 +222,32 @@ describe('Superpave PG API', () => {
 
       await http.delete(`/analyses/${mine.body.id}`).set('Authorization', auth).expect(204);
       await http.get(`/analyses/${mine.body.id}`).expect(404);
+    });
+  });
+
+  describe('site statistics (owner only)', () => {
+    afterAll(() => {
+      delete process.env.ADMIN_EMAILS;
+    });
+
+    it('other accounts and visitors are refused', async () => {
+      const res = await http.get('/admin/stats').set('Authorization', auth).expect(403);
+      expect(res.body).toEqual({ message: 'This page is only for the site owner.', code: 'NOT_ADMIN' });
+      await http.get('/admin/stats').expect(401);
+    });
+
+    it('the owner sees counts only: accounts, analyses, 30 days and grades', async () => {
+      process.env.ADMIN_EMAILS = 'owner@example.com';
+      const owner = await http.post('/auth/register').send({ email: 'Owner@Example.com', password: 'owner-pass-1' }).expect(201);
+      expect(owner.body.user.isAdmin).toBe(true);
+      const res = await http.get('/admin/stats').set('Authorization', `Bearer ${owner.body.accessToken}`).expect(200);
+      expect(res.body.accounts.total).toBeGreaterThanOrEqual(3);
+      expect(res.body.accounts.last7Days).toBe(res.body.accounts.total);
+      expect(res.body.analyses.total).toBeGreaterThan(0);
+      expect(res.body.perDay).toHaveLength(30);
+      expect(res.body.perDay.reduce((n: number, d: { signUps: number }) => n + d.signUps, 0)).toBe(res.body.accounts.total);
+      expect(res.body.grades[0]).toEqual({ grade: expect.stringMatching(/^PG /), count: expect.any(Number) });
+      expect(JSON.stringify(res.body)).not.toContain('@');
     });
   });
 

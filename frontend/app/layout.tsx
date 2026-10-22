@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { Analytics } from '@vercel/analytics/next';
 import { Inter, Space_Mono } from 'next/font/google';
 import type { ReactNode } from 'react';
 import { SiteFooter } from '@/components/SiteFooter';
@@ -32,6 +33,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <main className="flex-1">{children}</main>
           <SiteFooter />
         </AuthProvider>
+        {/* Vercel Web Analytics: counts visitors and pages without cookies (Vercel → project → Analytics). */}
+        <Analytics />
       </body>
     </html>
   );

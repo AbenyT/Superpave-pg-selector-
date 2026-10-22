@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { AdminController } from './admin/admin.controller';
 import { AnalysesModule } from './analyses/analyses.module';
 import { AuthModule } from './auth/auth.module';
 import { HealthController } from './health.controller';
@@ -12,7 +13,7 @@ import { HealthController } from './health.controller';
     AuthModule,
     AnalysesModule,
   ],
-  controllers: [HealthController],
+  controllers: [HealthController, AdminController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

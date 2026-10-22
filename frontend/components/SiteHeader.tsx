@@ -33,6 +33,9 @@ export function SiteHeader() {
   const signedIn = mounted && status === 'signed-in';
   const accountLinks = signedIn ? (
     <>
+      {user?.isAdmin && (
+        <Link href="/admin" className="rounded-full px-3 py-2 text-sm font-medium text-muted transition hover:text-ink">Site stats</Link>
+      )}
       <Link href="/dashboard" className="rounded-full px-3 py-2 text-sm font-medium text-muted transition hover:text-ink">My analyses</Link>
       <Link href="/analyse" className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition hover:bg-primary-hover">
         <Plus size={16} />New analysis

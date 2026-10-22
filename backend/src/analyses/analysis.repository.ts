@@ -51,6 +51,13 @@ export function summaryOf(record: AnalysisRecord): AnalysisSummary {
   };
 }
 
+/** One analysis for the owner's site statistics: no inputs, no results beyond the grade. */
+export interface AnalysisActivity {
+  createdAt: Date;
+  finalGrade: string;
+  ownerId: string | null;
+}
+
 export type NewAnalysis = Omit<AnalysisRecord, 'id' | 'createdAt' | 'updatedAt'>;
 export type AnalysisChanges = Pick<NewAnalysis, 'projectName' | 'stationName' | 'inputs' | 'result' | 'engineVersion'>;
 
@@ -63,6 +70,8 @@ export abstract class AnalysesRepository {
   /** The owner's analyses, newest change first. */
   abstract listByOwner(ownerId: string): Promise<AnalysisSummary[]>;
   abstract delete(id: string): Promise<void>;
+  /** Every analysis, light columns only (for the owner's site statistics). */
+  abstract activity(): Promise<AnalysisActivity[]>;
   /** 'up' / 'down' for the database; always 'up' for memory. */
   abstract ping(): Promise<'up' | 'down'>;
 }
@@ -101,6 +110,10 @@ export class MemoryAnalysesRepository extends AnalysesRepository {
 
   async delete(id: string): Promise<void> {
     this.items.delete(id);
+  }
+
+  async activity(): Promise<AnalysisActivity[]> {
+    return [...this.items.values()].map((r) => ({ createdAt: r.createdAt, finalGrade: r.result.finalGrade.label, ownerId: r.ownerId }));
   }
 
   async ping(): Promise<'up'> {

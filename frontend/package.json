@@ -11,6 +11,7 @@
   "dependencies": {
     "@pg/engine": "1.0.0",
     "@pg/parser": "1.0.0",
+    "@vercel/analytics": "^1.6.1",
     "exceljs": "^4.4.0",
     "next": "^16.4.2",
     "pdfmake": "0.3.11",

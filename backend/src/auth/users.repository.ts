@@ -17,6 +17,8 @@ export abstract class UsersRepository {
   abstract create(data: NewUser): Promise<UserRecord>;
   abstract findByEmail(email: string): Promise<UserRecord | null>;
   abstract findById(id: string): Promise<UserRecord | null>;
+  /** When every account was created (for the owner's site statistics). */
+  abstract signUpDates(): Promise<Date[]>;
 }
 
 export class MemoryUsersRepository extends UsersRepository {
@@ -37,6 +39,10 @@ export class MemoryUsersRepository extends UsersRepository {
     const record = this.items.get(id);
     return record ? { ...record } : null;
   }
+
+  async signUpDates(): Promise<Date[]> {
+    return [...this.items.values()].map((u) => u.createdAt);
+  }
 }
 
 export class PrismaUsersRepository extends UsersRepository {
@@ -54,5 +60,10 @@ export class PrismaUsersRepository extends UsersRepository {
 
   findById(id: string): Promise<UserRecord | null> {
     return this.prisma.user.findUnique({ where: { id } });
+  }
+
+  async signUpDates(): Promise<Date[]> {
+    const rows = await this.prisma.user.findMany({ select: { createdAt: true } });
+    return rows.map((r) => r.createdAt);
   }
 }

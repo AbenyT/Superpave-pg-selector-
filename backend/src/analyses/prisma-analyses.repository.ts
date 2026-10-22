@@ -3,7 +3,7 @@ import { Analysis, Prisma, PrismaClient } from '@prisma/client';
 import { ClimateAnalysis, GradeResult } from '@pg/engine';
 import { StationInfo } from '@pg/parser';
 import { sharedPrisma } from '../storage';
-import { AnalysesRepository, AnalysisChanges, AnalysisRecord, AnalysisSummary, NewAnalysis } from './analysis.repository';
+import { AnalysesRepository, AnalysisActivity, AnalysisChanges, AnalysisRecord, AnalysisSummary, NewAnalysis } from './analysis.repository';
 
 const json = (value: unknown) => value as Prisma.InputJsonValue;
 
@@ -105,6 +105,10 @@ export class PrismaAnalysesRepository extends AnalysesRepository implements OnMo
 
   async delete(id: string): Promise<void> {
     await this.prisma.analysis.delete({ where: { id } });
+  }
+
+  activity(): Promise<AnalysisActivity[]> {
+    return this.prisma.analysis.findMany({ select: { createdAt: true, finalGrade: true, ownerId: true } });
   }
 
   async ping(): Promise<'up' | 'down'> {

@@ -44,6 +44,6 @@ function jwtSecret(): string {
       useFactory: (): UsersRepository => (usesDatabase() ? new PrismaUsersRepository() : new MemoryUsersRepository()),
     },
   ],
-  exports: [JwtModule, JwtAuthGuard],
+  exports: [JwtModule, JwtAuthGuard, UsersRepository],
 })
 export class AuthModule {}

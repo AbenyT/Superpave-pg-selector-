@@ -4,7 +4,14 @@ import bcrypt from 'bcryptjs';
 import { LoginDto, RegisterDto } from './auth.dto';
 import { UserRecord, UsersRepository } from './users.repository';
 
-export interface PublicUser { id: string; email: string; name: string | null }
+export interface PublicUser { id: string; email: string; name: string | null; isAdmin: boolean }
+
+/** Accounts that may see the site statistics: ADMIN_EMAILS (comma separated), by default the site owner. */
+export function isAdminEmail(email: string): boolean {
+  const list = (process.env.ADMIN_EMAILS ?? 'abenytilahunccecc@gmail.com').split(',').map((e) => e.trim().toLowerCase());
+  return list.includes(email.toLowerCase());
+}
+
 export interface AuthResponse { accessToken: string; user: PublicUser }
 
 /** Accounts work as in the AASHTO 1993 app: email + password (bcrypt), and a JWT the page keeps. */
@@ -46,5 +53,5 @@ export class AuthService {
 }
 
 function publicUser(user: UserRecord): PublicUser {
-  return { id: user.id, email: user.email, name: user.name };
+  return { id: user.id, email: user.email, name: user.name, isAdmin: isAdminEmail(user.email) };
 }

@@ -41,6 +41,16 @@ export interface User {
   id: string;
   email: string;
   name: string | null;
+  /** True for the site owner, who may open the site statistics. */
+  isAdmin: boolean;
+}
+
+/** GET /admin/stats: counts only, for the site owner. */
+export interface SiteStats {
+  accounts: { total: number; last7Days: number; last30Days: number };
+  analyses: { total: number; last7Days: number; last30Days: number; activeAccounts30Days: number };
+  perDay: { date: string; signUps: number; analyses: number }[];
+  grades: { grade: string; count: number }[];
 }
 
 interface AuthResponse {
@@ -144,6 +154,8 @@ export function createAnalysis(file: File, fields: FormFields): Promise<Analysis
   form.append('acceptConsiderBump', String(fields.acceptConsiderBump));
   return call<AnalysisView>('/analyses', { method: 'POST', body: form });
 }
+
+export const siteStats = () => call<SiteStats>('/admin/stats');
 
 export const listAnalyses = () => call<AnalysisSummary[]>('/analyses');
 
