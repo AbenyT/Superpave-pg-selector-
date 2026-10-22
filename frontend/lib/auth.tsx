@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import * as api from './api';
 import type { User } from './api';
+import { useSlow, WAKING_UP } from './use-slow';
 
 type Status = 'loading' | 'signed-in' | 'signed-out';
 
@@ -90,11 +91,12 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   const { status } = useAuth();
   const router = useRouter();
   const mounted = useIsClient();
+  const slow = useSlow(status === 'loading');
   useEffect(() => {
     if (status === 'signed-out') router.replace(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
   }, [status, router]);
   if (!mounted || status !== 'signed-in') {
-    return <div className="py-24 text-center text-sm text-muted">Checking your log-in…</div>;
+    return <div className="py-24 text-center text-sm text-muted">{slow ? WAKING_UP : 'Checking your log-in…'}</div>;
   }
   return <>{children}</>;
 }

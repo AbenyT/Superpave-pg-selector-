@@ -6,6 +6,7 @@ import { ArrowRight, Plus, Trash } from '@/components/icons';
 import { ApiError, deleteAnalysis, listAnalyses, type AnalysisSummary } from '@/lib/api';
 import { RequireAuth, useAuth } from '@/lib/auth';
 import { gradeText, num } from '@/lib/format';
+import { useSlow, WAKING_UP } from '@/lib/use-slow';
 
 const BINDER_CODE: Record<string, 1 | 2 | 3> = { 'Crude oil': 1, 'High-quality crude oil': 2, 'Modifier required': 3 };
 
@@ -21,6 +22,7 @@ function Dashboard() {
   const { user } = useAuth();
   const [items, setItems] = useState<AnalysisSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const slow = useSlow(!items && !error);
 
   useEffect(() => {
     listAnalyses()
@@ -81,7 +83,7 @@ function Dashboard() {
         </div>
       )}
 
-      {!items && !error && <p className="py-20 text-center text-sm text-muted">Loading your analyses…</p>}
+      {!items && !error && <p className="py-20 text-center text-sm text-muted">{slow ? WAKING_UP : 'Loading your analyses…'}</p>}
 
       {items && items.length === 0 && (
         <div className="mt-8 rounded-3xl border border-dashed border-line-strong px-6 py-14 text-center">

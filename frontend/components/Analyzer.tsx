@@ -11,6 +11,7 @@ import { AnalysisError, analyseClimate, computeGrade, validateDesignInputs, type
 import { MAX_FILE_BYTES, readTemperatureFile, type StationInfo } from '@pg/parser';
 import { ApiError, createAnalysis, getAnalysis, updateAnalysis, wakeApi, type ClimateView } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { useSlow, WAKING_UP } from '@/lib/use-slow';
 import { parseNumber } from '@/lib/format';
 import { downloadCanvas } from '@/lib/chart-canvas';
 import type { ReportInput } from '@/lib/report';
@@ -262,8 +263,11 @@ export function Analyzer({ onSaved }: { onSaved?: (id: string) => void }) {
 
 function SaveBadge({ save, isOwner, onRetry }: { save: SaveState; isOwner: boolean; onRetry: () => void }) {
   const [copied, setCopied] = useState(false);
+  const slow = useSlow(save.kind === 'saving');
   if (save.kind === 'idle') return null;
-  if (save.kind === 'saving') return <span className="inline-flex items-center gap-1.5 text-muted"><Cloud size={16} /> Saving…</span>;
+  if (save.kind === 'saving') {
+    return <span className="inline-flex items-center gap-1.5 text-muted"><Cloud size={16} /> {slow ? WAKING_UP : 'Saving…'}</span>;
+  }
   if (save.kind === 'failed') {
     return (
       <span className="inline-flex items-center gap-2 text-warn">

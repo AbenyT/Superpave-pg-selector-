@@ -1,108 +1,90 @@
 /**
- * "Specification for Bitumen with Performance Grade PG XX-YY", laid out like the reference table:
- * blue header, purple Original Binder, red RTFO, orange PAV, green DTT. Every cell of the selected grade
- * uses one soft highlight (.selected-grade in globals.css) that fades in.
- * It is a document, so it keeps its own light colours in dark mode too.
+ * "Specification for Bitumen with Performance Grade PG XX-YY" in the classic Asphalt Institute spec-sheet style:
+ * navy bars with yellow text, grey criteria column, white test-name rows and cream value cells that alternate
+ * column by column. Every cell of the selected grade gets .selected-grade (gold, navy outline, fades in).
+ * All colours are the --spec-* variables in globals.css (.spec-sheet), with a dark version for the dark theme.
  */
+import type { ReactNode } from 'react';
 import type { SpecTable as Spec } from '@pg/engine';
 import { gradeText, signed } from '@/lib/format';
-
-const C = {
-  blue: '#2b8bd8', teal: '#17a589', pink: '#fde4e4', lblue: '#dbeafa',
-  purple: '#8e44ad', rtfo: '#e74c3c', pav: '#e67e22', yellow: '#fef3cd', green: '#d9f2e3', lav: '#dfe6fb',
-  dtt: '#27ae60', white: '#ffffff',
-};
 
 export function SpecTable({ spec }: { spec: Spec }) {
   const n = spec.columns.length;
   const L = spec.limits;
-  const td = 'border border-[#c9ced6] px-2.5 py-2';
 
-  const perColumn = (values: number[], bg: string) =>
+  /** One value per low-grade column: cream / cream-alt by column, gold for the selected grade. */
+  const perColumn = (values: number[]) =>
     spec.columns.map((c, i) => (
-      <td key={c.lowGrade} className={`${td} text-center ${c.selected ? 'selected-grade' : ''}`}
-        style={c.selected ? undefined : { background: bg, color: '#1f2937' }}>
+      <td key={c.lowGrade} className={c.selected ? 'selected-grade' : i % 2 === 0 ? 'spec-val' : 'spec-val-alt'}>
         {signed(values[i])}
       </td>
     ));
-  const full = (content: React.ReactNode, bg: string, opts: { bold?: boolean; white?: boolean; center?: boolean } = {}) => (
-    <td colSpan={n} className={`${td} ${opts.center ? 'text-center' : ''}`}
-      style={{ background: bg, color: opts.white ? '#fff' : '#1f2937', fontWeight: opts.bold ? 700 : 400 }}>
-      {content}
-    </td>
+  /** A full-width test temperature of the selected grade. */
+  const selectedFull = (value: number) => <td colSpan={n} className="selected-grade">{value}</td>;
+  /** A full-width test-name row: name in bold, the part in brackets in regular weight. */
+  const test = (name: string, detail = '') => (
+    <td colSpan={n} className="spec-test"><b>{name}</b>{detail && <> {detail}</>}</td>
   );
-  /** A full-width cell holding a test temperature of the selected grade. */
-  const selectedFull = (value: number) => (
-    <td colSpan={n} className={`${td} selected-grade text-center`}>{value}</td>
+  const bar = (text: string) => (
+    <tr><td colSpan={n + 1} className="spec-bar">{text}</td></tr>
   );
-  const head = (text: string, bg: string) => (
-    <tr><td colSpan={n + 1} className={td} style={{ background: bg, color: '#fff', fontWeight: 700 }}>{text}</td></tr>
-  );
-  const left = (text: React.ReactNode, bg = C.white) => (
-    <td className={td} style={{ background: bg, color: '#1f2937' }}>{text}</td>
-  );
+  const label = (content: ReactNode = '') => <td className="spec-label">{content}</td>;
 
   return (
-    <div className="rounded-xl bg-white p-4 text-[#1f2937] sm:p-5">
-      <h3 className="mb-3 font-serif text-lg font-bold">{gradeText(spec.title)}</h3>
+    <div className="spec-sheet p-4 sm:p-5">
+      <h3 className="spec-title mb-3 font-serif text-lg font-bold">{gradeText(spec.title)}</h3>
       <div className="overflow-x-auto">
-        <table key={spec.label} className="num w-full min-w-[640px] border-collapse font-sans text-[13px]">
+        <table key={spec.label} className="num w-full min-w-[640px] font-sans text-[13px]">
           <colgroup>
             <col style={{ width: '25%' }} />
             {spec.columns.map((c) => <col key={c.lowGrade} style={{ width: `${75 / n}%` }} />)}
           </colgroup>
           <tbody>
             <tr>
-              <td colSpan={2} className={`${td} text-center font-bold text-white`} style={{ background: C.blue }}>Performance Grades</td>
-              <td colSpan={n - 1} className={td} style={{ background: C.blue }} />
+              <td colSpan={2} className="spec-bar spec-title-bar">Performance Grades</td>
+              <td colSpan={n - 1} className="spec-bar" />
             </tr>
             <tr>
-              <td className={`${td} font-bold text-white`} style={{ background: C.teal }}>Property</td>
-              {full(`PG ${spec.highGrade}`, C.teal, { bold: true, white: true, center: true })}
+              <td className="spec-bar">Property</td>
+              <td colSpan={n} className="spec-bar text-center">PG {spec.highGrade}</td>
+            </tr>
+            <tr>{label(<b>Max. Design Temp. (°C)</b>)}{selectedFull(spec.highGrade)}</tr>
+            <tr>{label(<b>Min. Design Temp. (°C)</b>)}{perColumn(spec.columns.map((c) => c.lowGrade))}</tr>
+            {bar('Original Binder')}
+            <tr>{label(`≥${L.flashPointMinC} °C`)}{test('Flash Point')}</tr>
+            <tr>{label(`≤${L.viscosityMaxPaS} Pa·s @ ${L.viscosityTestTempC} °C`)}{test('Rotational Viscosity')}</tr>
+            <tr>{label(`≥${L.originalDsrMinKPa.toFixed(2)} kPa`)}{test('DSR G*/sin δ', '(Dynamic Shear Rheometer)')}</tr>
+            <tr>{label()}{selectedFull(spec.originalDsrTempC)}</tr>
+            {bar(`(Rolling Thin Film Oven) RTFO, Mass Change ≤ ${L.rtfoMassChangeMaxPct.toFixed(2)}%`)}
+            <tr>{label(`≥${L.rtfoDsrMinKPa.toFixed(2)} kPa`)}{test('DSR G*/sin δ', '(Dynamic Shear Rheometer)')}</tr>
+            <tr>{label()}{selectedFull(spec.rtfoDsrTempC)}</tr>
+            {bar('(Pressure Aging Vessel) PAV')}
+            <tr>
+              {label(`${L.pavAgingHours} hours, ${L.pavPressureMPa.toFixed(2)} MPa`)}
+              <td colSpan={n} className="spec-val font-bold">{spec.pavAgingTempLabel.replace(' (', '(')}</td>
             </tr>
             <tr>
-              {left(<b style={{ color: '#c0392b' }}>🌡️ Max. Design Temp. (°C)</b>, C.pink)}
-              {selectedFull(spec.highGrade)}
+              {label(`≤${L.pavDsrMaxKPa} kPa`)}
+              {test('DSR G*·sin δ', '(Dynamic Shear Rheometer) intermediate Temp = [(Max. + Min.)/2] + 4')}
             </tr>
+            <tr>{label()}{perColumn(spec.columns.map((c) => c.pavDsrTempC))}</tr>
             <tr>
-              {left(<b>❄️ Min. Design Temp. (°C)</b>, C.lblue)}
-              {perColumn(spec.columns.map((c) => c.lowGrade), C.lblue)}
+              {label(<>S ≤ {L.bbrStiffnessMaxMPa} MPa<br />m ≥ {L.bbrMValueMin.toFixed(3)}</>)}
+              {test('BBR S (creep stiffness) & m-value', '(Bending Beam Rheometer)')}
             </tr>
-            {head('🧪 Original Binder', C.purple)}
-            <tr>{left(`≥${L.flashPointMinC} °C`)}{full('🔥 Flash Point', C.yellow)}</tr>
-            <tr>{left(`≤${L.viscosityMaxPaS} Pa·s @ ${L.viscosityTestTempC} °C`)}{full('💧 Rotational Viscosity', C.lblue)}</tr>
-            <tr>{left(`≥${L.originalDsrMinKPa.toFixed(2)} kPa`)}{full('⚙️ DSR G*/sin δ (Dynamic Shear Rheometer)', C.green)}</tr>
-            <tr>{left('')}{selectedFull(spec.originalDsrTempC)}</tr>
-            {head(`🔥 (Rolling Thin Film Oven) RTFO, Mass Change ≤ ${L.rtfoMassChangeMaxPct.toFixed(2)}%`, C.rtfo)}
-            <tr>{left(`≥${L.rtfoDsrMinKPa.toFixed(2)} kPa`)}{full('⚙️ DSR G*/sin δ (Dynamic Shear Rheometer)', C.green)}</tr>
-            <tr>{left('')}{selectedFull(spec.rtfoDsrTempC)}</tr>
-            {head('🏺 (Pressure Aging Vessel) PAV', C.pav)}
-            <tr>
-              {left(`${L.pavAgingHours} hours, ${L.pavPressureMPa.toFixed(2)} MPa`, C.yellow)}
-              {full(spec.pavAgingTempLabel.replace(' (', '('), C.yellow, { bold: true, center: true })}
-            </tr>
-            <tr>
-              {left(`≤${L.pavDsrMaxKPa} kPa`)}
-              {full('⚙️ DSR G*·sin δ (Dynamic Shear Rheometer) intermediate Temp = [(Max. + Min.)/2] + 4', C.lblue)}
-            </tr>
-            <tr>{left('')}{perColumn(spec.columns.map((c) => c.pavDsrTempC), C.lblue)}</tr>
-            <tr>
-              {left(<>S ≤ {L.bbrStiffnessMaxMPa} MPa<br />m ≥ {L.bbrMValueMin.toFixed(3)}</>)}
-              {full('📊 BBR S (creep stiffness) & m-value (Bending Beam Rheometer)', C.lav)}
-            </tr>
-            <tr>{left('')}{perColumn(spec.columns.map((c) => c.bbrTempC), C.lav)}</tr>
-            {head('📏 DTT (Direct Tension Tester)', C.dtt)}
-            <tr>{left(<>ε<sub>f</sub> ≥ {L.dttFailureStrainMinPct.toFixed(2)}%</>)}{perColumn(spec.columns.map((c) => c.dttTempC), C.white)}</tr>
+            <tr>{label()}{perColumn(spec.columns.map((c) => c.bbrTempC))}</tr>
+            {bar('DTT (Direct Tension Tester)')}
+            <tr>{label(<>ε<sub>f</sub> ≥ {L.dttFailureStrainMinPct.toFixed(2)}%</>)}{perColumn(spec.columns.map((c) => c.dttTempC))}</tr>
           </tbody>
         </table>
       </div>
-      <p className="mt-3 text-justify font-serif text-[13px] italic text-[#555]">
-        <b>Note:</b> The <span className="selected-grade-swatch">highlighted cells</span> (light shaded background) indicate the
-        test temperatures corresponding to the project-selected PG grade. All values must meet the specified criteria for
-        the binder to be certified for this performance grade according to AASHTO M320/M332 standards.
+      <p className="spec-note mt-3">
+        <b>Note:</b> The <span className="spec-swatch" aria-hidden="true" /> highlighted cells (gold background with navy outline)
+        indicate the test temperatures corresponding to the project-selected PG grade. All values must meet the specified
+        criteria for the binder to be certified for this performance grade according to AASHTO M320/M332.
       </p>
       {!spec.inM320 && (
-        <p className="mt-2 font-serif text-[13px] italic text-[#4b5563]">
+        <p className="spec-title mt-2 font-serif text-[13px] italic">
           {gradeText(spec.label)} is not listed in AASHTO M320 Table 1; the test temperatures above follow the same rules.
         </p>
       )}

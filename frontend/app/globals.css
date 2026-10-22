@@ -75,7 +75,6 @@
   --warn-soft: rgb(253 192 74 / 0.13);
   --grid: #34316a;
   --band: #15132b;
-  --selected-grade: #f2d592; /* soft amber, a little deeper on the dark page */
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.35);
   --shadow-float: 0 18px 50px -12px rgb(10 8 30 / 0.7);
 }
@@ -107,7 +106,6 @@
   --warn-soft: #fffaeb;
   --grid: #ebe9f7;
   --band: #ece9fe;
-  --selected-grade: #ffe8b3; /* soft amber */
   --shadow-card: 0 1px 2px rgb(23 21 58 / 0.06), 0 1px 1px rgb(23 21 58 / 0.04);
   --shadow-float: 0 18px 50px -14px rgb(23 21 58 / 0.3);
 }
@@ -146,23 +144,109 @@ body {
     radial-gradient(45% 60% at 0% 100%, rgb(47 128 255 / 0.12), transparent 70%);
 }
 
-/* Specification table: every cell of the selected grade, one soft colour that fades in. */
-.selected-grade {
-  background: var(--selected-grade);
-  color: #333;
-  font-weight: 700;
-  animation: selected-grade-in 0.5s ease-in;
+/*
+ * Specification table, classic Asphalt Institute spec-sheet style. All its colours are set here.
+ * The dark version follows the site's dark theme (the default; the header toggle switches it).
+ */
+.spec-sheet {
+  --spec-navy: #1f3b73; /* title bar and section bars */
+  --spec-navy-dark: #162b55; /* thin borders around navy bars */
+  --spec-yellow: #ffd200; /* text on navy bars, top accent line */
+  --spec-gray: #6e6e6e; /* criteria / label column */
+  --spec-cream: #fff6d6; /* value cells, odd columns */
+  --spec-cream-alt: #fce9a8; /* value cells, even columns */
+  --spec-white: #ffffff; /* test-name rows */
+  --spec-text: #1a1a1a; /* text on white and cream cells */
+  --spec-grid: #c9b98a; /* cell borders */
+  --spec-gold: #f5c542; /* selected grade */
+  --spec-page: #ffffff;
+  --spec-title: #1a1a1a;
+  --spec-cream-text: var(--spec-text);
+  --spec-test-text: var(--spec-text);
+  background: var(--spec-page);
+  color: var(--spec-title);
 }
-.selected-grade-swatch {
-  background: var(--selected-grade);
-  color: #333;
-  border-radius: 3px;
-  padding: 0 4px;
+/* Dark version on screen only: a printed page always gets the light sheet. */
+@media screen {
+  :root[data-theme="dark"] .spec-sheet {
+    --spec-gray: #4a4a4a;
+    --spec-cream: #3a3424;
+    --spec-cream-alt: #4a4128;
+    --spec-white: #2a2a2a;
+    --spec-page: transparent;
+    --spec-title: #f2ead0;
+    --spec-cream-text: #f2ead0;
+    --spec-test-text: #f2ead0;
+  }
+}
+.spec-sheet table {
+  border-collapse: collapse;
+  border-top: 4px solid var(--spec-yellow);
+}
+.spec-sheet td {
+  border: 1px solid var(--spec-grid);
+  padding: 0.5rem 0.625rem;
+}
+.spec-sheet .spec-bar {
+  background: var(--spec-navy);
+  border-color: var(--spec-navy-dark);
+  color: var(--spec-yellow);
+  font-weight: 700;
+}
+.spec-sheet .spec-title-bar {
+  font-family: "Arial Black", "Arial Bold", Arial, sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  text-align: center;
+}
+.spec-sheet .spec-label {
+  background: var(--spec-gray);
+  color: #ffffff;
+}
+.spec-sheet .spec-test {
+  background: var(--spec-white);
+  color: var(--spec-test-text);
+}
+.spec-sheet .spec-val,
+.spec-sheet .spec-val-alt {
+  background: var(--spec-cream);
+  color: var(--spec-cream-text);
+  text-align: center;
+}
+.spec-sheet .spec-val-alt {
+  background: var(--spec-cream-alt);
+}
+/* Every cell of the selected grade: one style, fades in from cream on load and when the grade changes. */
+.spec-sheet .selected-grade {
+  background: var(--spec-gold);
+  color: var(--spec-navy);
+  font-weight: 700;
+  text-align: center;
+  outline: 2px solid var(--spec-navy);
+  outline-offset: -2px;
+  animation: selected-grade-in 0.5s ease-in;
 }
 @keyframes selected-grade-in {
   from {
-    background-color: transparent;
+    background-color: var(--spec-cream);
   }
+}
+.spec-sheet .spec-note {
+  font-style: italic;
+  font-size: 13px;
+  color: #444;
+  background: #fff6d6;
+  border-left: 3px solid #1f3b73;
+  padding: 8px 12px;
+}
+.spec-sheet .spec-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 2px;
+  vertical-align: -1px;
+  background: #f5c542;
+  border: 1px solid #1f3b73;
 }
 
 /* Heatmap cells without enough data. */
@@ -198,7 +282,6 @@ body {
     --ink: #0b0b0d;
     --muted: #52525b;
     --line: #e4e4e7;
-    --selected-grade: #ffe8b3;
   }
   .print-hidden {
     display: none !important;

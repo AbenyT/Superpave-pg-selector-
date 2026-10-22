@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { useSlow, WAKING_UP } from '@/lib/use-slow';
 import { Alert } from './icons';
 import { inputClass } from './ui';
 
@@ -26,6 +27,7 @@ export function AuthForm({ mode, compact = false }: { mode: 'login' | 'register'
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const isLogin = mode === 'login';
+  const slow = useSlow(busy);
 
   useEffect(() => {
     if (status === 'signed-in' && !compact) router.replace(nextPage());
@@ -75,6 +77,7 @@ export function AuthForm({ mode, compact = false }: { mode: 'login' | 'register'
         className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-on-primary transition hover:bg-primary-hover disabled:opacity-60">
         {busy ? 'Please wait…' : isLogin ? 'Log in' : compact ? 'Sign up and start for free' : 'Create account'}
       </button>
+      {slow && <p role="status" className="text-sm text-warn">{WAKING_UP}</p>}
       <p className={`text-sm text-muted ${compact ? '' : 'pt-1 text-center'}`}>
         {isLogin
           ? <>No account yet? <Link className="font-semibold text-ink underline decoration-primary underline-offset-4" href="/register">Create one</Link></>
